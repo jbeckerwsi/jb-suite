@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>T:\Documentation-LabN101\Software\MATLAB\jb-suite\drivers\lakeshore_DT670.mdd</DriverName>
+   <DriverType>MATLAB generic</DriverType>
+   <InstrumentType>Temperature Sensor</InstrumentType>
+   <InstrumentManufacturer>Lakeshore</InstrumentManufacturer>
+   <InstrumentModel>DT670</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify/>
+   <Reset/>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.UserData.DT600StandardCurveInterpolationTable = [...
+                1.4 1.64429;
+                1.5 1.64299;
+                1.6 1.64157;
+                1.7 1.64003;
+                1.8 1.63837;
+                1.9 1.6366;
+                2 1.63472;
+                2.1 1.63274;
+                2.2 1.63067;
+                2.3 1.62852;
+                2.4 1.62629;
+                2.5 1.624;
+                2.6 1.62166;
+                2.7 1.61928;
+                2.8 1.61687;
+                2.9 1.61445;
+                3 1.612;
+                3.1 1.60951;
+                3.2 1.60697;
+                3.3 1.60438;
+                3.4 1.60173;
+                3.5 1.59902;
+                3.6 1.59626;
+                3.7 1.59344;
+                3.8 1.59057;
+                3.9 1.58764;
+                4 1.58465;
+                4.2 1.57848;
+                4.4 1.57202;
+                4.6 1.56533;
+                4.8 1.55845;
+                5 1.55145;
+                5.2 1.54436;
+                5.4 1.53721;
+                5.6 1.53;
+                5.8 1.52273;
+                6 1.51541;
+                6.5 1.49698;
+                7 1.47868;
+                7.5 1.46086;
+                8 1.44374;
+                8.5 1.42747;
+                9 1.41207;
+                9.5 1.39751;
+                10 1.38373;
+                10.5 1.37065;
+                11 1.3582;
+                11.5 1.34632;
+                12 1.33499;
+                12.5 1.32416;
+                13 1.31381;
+                13.5 1.3039;
+                14 1.29439;
+                14.5 1.28526;
+                15 1.27645;
+                15.5 1.26794;
+                16 1.25967;
+                16.5 1.25161;
+                17 1.24372;
+                17.5 1.23596;
+                18 1.2283;
+                18.5 1.2207;
+                19 1.21311;
+                19.5 1.20548;
+                20 1.19774;
+                21 1.18154;
+                22 1.16279;
+                23 1.14081;
+                24 1.12592;
+                25 1.11944;
+                26 1.11565;
+                27 1.11281;
+                28 1.11042;
+                29 1.10826;
+                30 1.10624;
+                31 1.10432;
+                32 1.10247;
+                33 1.10068;
+                34 1.09893;
+                35 1.09721;
+                36 1.09553;
+                37 1.09387;
+                38 1.09224;
+                39 1.09062;
+                40 1.08902;
+                42 1.08584;
+                44 1.08266;
+                46 1.07949;
+                48 1.0763;
+                50 1.07309;
+                52 1.06988;
+                54 1.06665;
+                56 1.0634;
+                58 1.06014;
+                60 1.05686;
+                65 1.04858;
+                70 1.04018;
+                75 1.03165;
+                77.35 1.02759;
+                80 1.02298;
+                85 1.01418;
+                90 1.00524;
+                95 0.99617;
+                100 0.98697;
+                105 0.97765;
+                110 0.9682;
+                115 0.95865;
+                120 0.949;
+                125 0.93924;
+                130 0.92939;
+                135 0.91944;
+                140 0.90941;
+                145 0.8993;
+                150 0.88911;
+                155 0.87885;
+                160 0.86851;
+                165 0.85812;
+                170 0.84765;
+                175 0.83713;
+                180 0.82656;
+                185 0.81592;
+                190 0.80524;
+                195 0.7945;
+                200 0.78372;
+                205 0.77288;
+                210 0.762;
+                215 0.75108;
+                220 0.74011;
+                225 0.7291;
+                230 0.71805;
+                235 0.70696;
+                240 0.69583;
+                245 0.68466;
+                250 0.67346;
+                255 0.66222;
+                260 0.65094;
+                265 0.63964;
+                270 0.6283;
+                273.15 0.62114;
+                275 0.61693;
+                280 0.60552;
+                285 0.59409;
+                290 0.58263;
+                295 0.57115;
+                300 0.55963;
+                305 0.5481;
+                310 0.53654;
+                315 0.52496;
+                320 0.51336;
+                325 0.50174;
+                330 0.4901;
+                335 0.47844;
+                340 0.46676;
+                345 0.45506;
+                350 0.44337;
+                355 0.43167;
+                360 0.41996;
+                365 0.40823;
+                370 0.3965;
+                375 0.38475;
+                380 0.373;
+                385 0.36123;
+                390 0.34945;
+                395 0.33765;
+                400 0.32583;
+                405 0.314;
+                410 0.30216;
+                415 0.29029;
+                420 0.27841;
+                425 0.26651;
+                430 0.25459;
+                435 0.24265;
+                440 0.23069;
+                445 0.21873;
+                450 0.20675;
+                455 0.19478;
+                460 0.18283;
+                465 0.1709;
+                470 0.15901;
+                475 0.14719;
+                480 0.13548;
+                485 0.12391;
+                490 0.11255;
+                495 0.10145];</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>MCode</Type>
+      <Code>function cleanup(obj)
+% This function is called before the object is disconnected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo/>
+         <MethodInfo>
+            <Method>
+               <Name>transfer</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function Temperature=transfer(obj,voltage)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+%made my life simple ... but hey; close enough
+Temperature=interp1(obj.UserData.DT600StandardCurveInterpolationTable(:,2),obj.UserData.DT600StandardCurveInterpolationTable(:,1),voltage);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>transferRev</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function voltage=transferRev(obj,Temperature)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+voltage=interp1(obj.UserData.DT600StandardCurveInterpolationTable(:,1),obj.UserData.DT600StandardCurveInterpolationTable(:,2),Temperature);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

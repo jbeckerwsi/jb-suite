@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\matlab-programs\jonathan\drivers\keithley_2000.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Digital Multimeter</InstrumentType>
+   <InstrumentManufacturer>Keithley</InstrumentManufacturer>
+   <InstrumentModel>2000</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>*IDN?</Identify>
+   <Reset>*RST</Reset>
+   <Selftest>*TST?</Selftest>
+   <Error>:SYSTEM:error?</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+
+obj.UserData.IntegrationStarted=0; %internal singifier, that the integration cycle has been started by invoking 'integration_start'</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+fprintf(obj.Interface,'*RST;*CLS;:FORMAT:DATA ASC'); %reset, clear, set data format to IEEE754 double precision (this is 20% faster to FETC? than ascii)
+obj.mode='VDC';
+obj.autorange=0;
+obj.autozero=0;
+obj.trigger_source='bus';
+obj.trigger_delay=0;
+obj.trigger_timer='min';
+obj.trigger_count=1;
+obj.filter_count=1;
+obj.filter_enable=0;
+obj.nplc=10;</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>MCode</Type>
+      <Code>function cleanup(obj)
+% This function is called before the object is disconnected.
+% OBJ is the device object.
+
+obj.range=10;
+obj.trigger_source='immediate';
+obj.trigger_continuous=1;
+obj.text=NaN;
+obj.nplc=1;
+% End of function definition - DO NOT EDIT
+</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>autorange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:RANGe:AUTO?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:RANGe:AUTO %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>1.0</Value>
+                     <Value>0.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>autozero</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:SYST:AZER:STATE </ConfigureCommand>
+                     <QueryCommand>:SYST:AZER:STATE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>This command is used to disable or enable autozero. When enabled, accuracy
+is optimized. When disabled, speed is increased at the expense of
+accuracy.
+Important Note: Before you can enable or disable auto-zero, the Model
+2000 must first be in the idle state. The Model 2000 can be placed in the
+idle state by first disabling continuous initiation (:INITiate:CONTinuous
+OFF), and then sending the :ABORt command. After sending the :STATe
+command, readings can be re-started by sending :INITiate:CONTinuous
+ON or :INITiate.</Description>
+            </Property>
+            <Property>
+               <Name>calibration_date</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>:CAL:PROT:DATE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>calibration_due</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>CAL:PROT:NDUE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>filter_count</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:AVER:COUN?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:AVER:COUN %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>These commands are used to specify the filter count. In general, the filter
+count is the number of readings that are acquired and stored in the filter
+buffer for the averaging calculation. The larger the filter count, the more
+filtering that is performed.</Description>
+            </Property>
+            <Property>
+               <Name>filter_enable</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=str2num(query(g,sprintf(':%s:AVER:STAT?',m)));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:AVER:STAT %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>integration_done</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% check if instrument in in 'idle' state
+
+if(strcmp(obj.operation_condition,'idle'))
+    propertyValue = 1;
+else
+    propertyValue = 0;
+end
+
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>check if operation is complete, i.e. integration is done
+
+if value if '1', then the integration is done and data is available
+
+this property exists mostly due to generalization.</Description>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:FUNC </ConfigureCommand>
+                     <QueryCommand>:FUNC?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="VDC" Value="&#34;VOLT:DC&#34;"/>
+                     <Enum Name="VAC" Value="&#34;VOLT:AC&#34;"/>
+                     <Enum Name="ADC" Value="&#34;CURR:DC&#34;"/>
+                     <Enum Name="AAC" Value="&#34;CURR:AC&#34;"/>
+                     <Enum Name="R" Value="&#34;RES&#34;"/>
+                     <Enum Name="R4t" Value="&#34;FRES&#34;"/>
+                     <Enum Name="TEMP" Value="&#34;TEMP&#34;"/>
+                     <Enum Name="FREQ" Value="&#34;FREQ&#34;"/>
+                     <Enum Name="PERIOD" Value="&#34;PER&#34;"/>
+                     <Enum Name="DIODE" Value="&#34;DIOD&#34;"/>
+                     <Enum Name="CONT" Value="&#34;CONT&#34;"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>VDC</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>mode as in: "what does it measure"</Description>
+            </Property>
+            <Property>
+               <Name>nplc</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+
+propertyValue=query(g,sprintf(':%s:NPLC?',obj.plainMode));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+
+fprintf(obj.Interface,sprintf(':%s:NPLC %f',obj.plainMode,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="10.0" Min="0.01"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.01</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>integration-time in number of power line-cycles</Description>
+            </Property>
+            <Property>
+               <Name>operation_condition</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>:STAT:OPER:COND?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="idle" Value="1024"/>
+                     <Enum Name="waiting for trigger" Value="32"/>
+                     <Enum Name="measuring" Value="16"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>idle</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>plainMode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% get mode in nomenclature of instrument rather than the generalized
+% notation
+g=obj.Interface;
+m=query(g,':FUNC?');
+propertyValue=m(2:end-2); %remove quotation marks</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% readonly
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>mode as known to the instument interaly (read-only)</Description>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:RANGe?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:RANGe %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>1</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>range of the instrument</Description>
+            </Property>
+            <Property>
+               <Name>text</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface
+t=query(g,':DISP:TEXT:STAT?');
+if t==0
+    propertyValue=NaN;
+else
+    t=query(g,':DISP:TEXT:DATA?');
+    propertyValue=t(2:end-2); %remove " ... "
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+
+if numel(propertyValue) &gt; 12
+    propertyValue=propertyValue(1:12);
+end
+
+if isnan(propertyValue)
+    fprintf(g,':DISP:TEXT:STATe 0');
+else
+    fprintf(g,sprintf(':DISP:TEXT:STATe 1; :DISP:TEXT:DATA "%s"',propertyValue));
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>trigger_continuous</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:INITiate:CONTinuous </ConfigureCommand>
+                     <QueryCommand>:INITiate:CONTinuous?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>trigger_count</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:COUN </ConfigureCommand>
+                     <QueryCommand>:TRIG:COUN?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="9999.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="INF" Value="INF"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>trigger_delay</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:DEL </ConfigureCommand>
+                     <QueryCommand>:TRIG:DEL?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="999999.999" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>trigger delay in seconds</Description>
+            </Property>
+            <Property>
+               <Name>trigger_source</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:SOUR </ConfigureCommand>
+                     <QueryCommand>:TRIG:SOUR?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="immediate" Value="IMM"/>
+                     <Enum Name="timer" Value="TIM"/>
+                     <Enum Name="manual" Value="MAN"/>
+                     <Enum Name="bus" Value="BUS"/>
+                     <Enum Name="external" Value="EXT"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>immediate</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>trigger_timer</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:TIM </ConfigureCommand>
+                     <QueryCommand>:TRIG:TIM?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="999999.999" Min="0.001"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="default" Value="0.1"/>
+                     <Enum Name="min" Value="0.001"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.001</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function result=getX(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+if ~obj.UserData.IntegrationStarted %internal singifier, that the integration cycle has been started by invoking 'integration_start'
+    %see wich state we are in:
+    state=obj.operation_condition;
+    switch state
+        case 'idle'
+            invoke(obj,'integration_start');
+        case 'waiting for trigger'
+            fprintf(obj.Interface,'*TRG');
+    end %if the instrument is already measuring, there is nothing else to do than to wait
+end
+
+while ~obj.integration_done
+    %do nothing, just wait and see ;)
+end
+
+% for :FORMAT:DATA ASC 
+result=sscanf(query(obj.Interface,'FETC?'),'%e');
+
+% for :FORMAT:DATA DREAl  double precision binary
+%fprintf(obj.Interface,'FETC?');
+%fread(obj.Interface,2); %skip header: first 2 bytes
+%[result,COUNT,MSG]=fread(obj.Interface,8,'double'); %read data
+%flushinput(obj.Interface); %empty buffer
+
+if result==9.9E37 %this means overflow
+    result=NaN;
+end
+
+obj.UserData.IntegrationStarted=0; %internal singifier, that the integration cycle is done.</MCode>
+               </Code>
+               <Description>use as follows:
+
+invoke(obj,'integration_start');
+while(~obj.ingetration_done)
+	%do whatever you so desire in the meantime
+end
+reading=invoke(obj,'getX'); %finally read data</Description>
+            </Method>
+            <Method>
+               <Name>getXY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function r=getXY(obj)
+%this function exists to provide better interchangebility between LockIn
+%and DC-Measurements. As we are only reading DC there is no imaginary part
+%and we can just return 'getX'
+r=invoke(obj,'getX');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>integration_start</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function integration_start(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+fprintf(obj.Interface,'*WAI;:INIT;*TRG');
+obj.UserData.IntegrationStarted=1;%internal singifier, that the integration cycle has been invoked by this method.</MCode>
+               </Code>
+               <Description>signify the start of an integration. (i.e. data aquisition, once the integration is done the property integration_done will be '1')
+
+this essentially triggers the instrument. It also relies on trigger_continuos to be '1'.
+
+
+This functionality has been added to enhance portablility between different instruments (Lock-In amplifiers and multimeters, for interchangable ac and dc measurements)</Description>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

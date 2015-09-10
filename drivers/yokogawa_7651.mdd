@@ -1,0 +1,582 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Users\jonathan.becker\Dropbox\wsi-backup\transport\software\jb-suite\drivers\yokogawa_7651.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>DC Power Supply</InstrumentType>
+   <InstrumentManufacturer>Yokogawa</InstrumentManufacturer>
+   <InstrumentModel>7651</InstrumentModel>
+   <InstrumentVersion>1.1</InstrumentVersion>
+   <Identify>OSE</Identify>
+   <Reset>RCE</Reset>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.UserData.rangeCache=NaN;
+obj.UserData.valueCache=NaN;    % the value-cache is used to prevent the driver to read back the value form the instrument immediately after setting the value; this reduces gpib-traffic and thus delay significantly
+obj.UserData.valueCacheLastUpdate=NaN; % place tic-value in this var
+obj.UserData.sequence=NaN;</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+
+%obj.limit_A=10;
+%obj.limit_V=5;
+g=obj.Interface;
+fprintf(g,'H1E'); %enable header output;
+obj.UserData.rangeCache=obj.range;
+%obj.UserData.valueCache=NaN;    % the value-cache is used to prevent the driver to read back the value form the instrument immediately after setting the value; this reduces gpib-traffic and thus delay significantly
+%obj.UserData.valueCacheLastUpdate=NaN; % place tic-value in this var
+%obj.UserData.sequence=NaN;
+invoke(obj,'decodeStatus');</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>limit_A</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+d=invoke(obj,'decodeStatus');
+propertyValue=1E-3*d.limit_A;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+
+obj.UserData.lastStatus.timestamp=0; %reset cache
+g=obj.Interface;
+fprintf(g,sprintf('LA%1.0f',propertyValue*1E3));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="0.12" Min="0.005"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.005</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>current-limit in ampere. (only applies to constant voltage mode)</Description>
+            </Property>
+            <Property>
+               <Name>limit_V</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+d=invoke(obj,'decodeStatus');
+propertyValue=d.limit_V;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+
+obj.UserData.lastStatus.timestamp=0; %reset cache
+g=obj.Interface;
+fprintf(g,sprintf('LV%1.0f',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="30.0" Min="1.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>voltage limit in V (only applies to constant current mode)</Description>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+d=invoke(obj,'decodeStatus');
+propertyValue=d.mode;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+obj.UserData.lastStatus.timestamp=0; %reset cache
+if(strcmp(propertyValue,'CC'))
+    obj.UserData.mode='CC';
+    g=obj.Interface;
+    fprintf(g,'F5E');
+elseif(strcmp(propertyValue,'CV'))
+    obj.UserData.mode='CV';
+    g=obj.Interface;
+    fprintf(g,'F1E');
+else
+    error('unknown function, choose CC or CV');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="unknown" Value=""/>
+                     <Enum Name="CC" Value="CC"/>
+                     <Enum Name="CV" Value="CV"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>unknown</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>set mode:
+CC - Constant Current
+CV - Constant Voltage</Description>
+            </Property>
+            <Property>
+               <Name>output_enabled</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if isfield(obj.UserData,'output')
+    propertyValue=obj.UserData.output;
+else
+    obj.UserData.output=NaN;
+    propertyValue=NaN;
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+
+g=obj.Interface;
+if(propertyValue)
+    fprintf(g,'O1E');
+    obj.UserData.output=1;
+else
+    fprintf(g,'O0E');
+    obj.UserData.output=0;
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>enable/disable output</Description>
+            </Property>
+            <Property>
+               <Name>overload</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+s=query(g,'OD');
+if s(1) == 'N'
+    propertyValue=0;
+elseif s(1) == 'E'
+    propertyValue=1;
+else
+    propertyValue=NaN;
+end
+    </GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>indicates overload-condition (i.e. limit_A or limit_V has been hit)</Description>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+d=invoke(obj,'decodeStatus');
+propertyValue=d.range;
+obj.UserData.rangeCache=d.range;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+obj.UserData.lastStatus.timestamp=0; %reset cache
+
+CVrange=[12E-3 120E-3 1.2 12 32];
+CVrangeCMD={'R2','R3','R4','R5','R6'};
+
+CCrange=[1.2E-3 12E-3 120E-3];
+CCrangeCMD={'R4','R5','R6'};
+if strcmp(obj.mode,'CV')
+     range    = CVrange;
+     rangeCMD = CVrangeCMD;
+     if(propertyValue &gt; 32)
+        warning('requested value %fV is out of range. max allowed range is 32V',propertyValue);
+     end
+else
+     range    = CCrange;
+     rangeCMD = CCrangeCMD;
+     if(propertyValue &gt; 120E-3)
+         warning('requested value %fA is out of range. max allowed range is 120mA',propertyValue);
+     end
+end
+    %find nearest
+ind=find(range &gt;= abs(propertyValue),1);
+obj.UserData.range=range(ind);
+g=obj.Interface;
+fprintf(g,sprintf('%sE',rangeCMD{ind}));
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>range in V/A, depending of CC or CV mode.
+
+upon arbitrary (double) input the instrument output range is set to the smallest possible value, that still allows to output the requested value:
+
+e.g.: 50E-3 in CV-mode sets the range to 120mV</Description>
+            </Property>
+            <Property>
+               <Name>value</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+if ~isnan(obj.UserData.valueCacheLastUpdate) &amp;&amp; toc(obj.UserData.valueCacheLastUpdate) &lt; 0.3 % keep the cache for 300ms
+    propertyValue=obj.UserData.valueCache;
+else
+    g=obj.Interface;
+    s=query(g,'OD');
+    propertyValue=sscanf(s(5:end),'%f'); %ignore header and read rest
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+%obj.UserData.lastStatus.timestamp=0; %reset cache
+
+if(abs(propertyValue) &gt; obj.UserData.rangeCache) %using rangeCache here: might not me the most recent value, but significantly quicker, as this cache is local
+%if(propertyValue &gt; obj.range)
+    error('Yokokaga 7651: exceeding range!');
+end
+
+g=obj.Interface;
+fprintf(g,'S%fE',propertyValue);
+obj.UserData.valueCache=propertyValue;
+obj.UserData.valueCacheLastUpdate=tic;
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>set: set instrument output, in V/A
+get: current output value in V/A</Description>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>decodeStatus</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function s=decodeStatus(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+if(~isfield(obj.UserData,'lastStatus')) || (now - obj.UserData.lastStatus.timestamp &gt; 5*1.1690e-05)
+   %if data is older than 5*1 second: request again
+
+    g=obj.Interface;
+
+    fprintf(g,'OSE');
+    i=1;
+    line='       ';
+    while(~strcmp(line(1:3),'END'))
+        line=fscanf(g);
+        data{i}=line;
+        i=i+1;
+    end
+
+    s.timestamp=now;
+    RangeCode=data{2}(1:4);
+
+    %converts a range code in format FmRm (e.g. F1R3) to 
+    % "readable" range (e.g. '10mV')
+    % does not contact Yokogawa - just Matlab
+    % -- Dominik Irber, 11.01.2015
+
+    % For group functions, OBJ is the group object. For
+    % base device functions, OBJ is the device object.
+
+    outputTypeCode = RangeCode(1:2);
+    rangeCode = RangeCode(3:4);
+    
+    s.RangeCode=RangeCode;
+
+    switch outputTypeCode
+        case 'F1'
+            s.mode='CV';
+            switch rangeCode
+                case 'R2'
+                    s.range = 12E-3;
+                case 'R3'
+                    s.range = 120E-3;
+                case 'R4'
+                    s.range = 1.2;
+                case 'R5'
+                    s.range = 12;
+                case 'R6'
+                    s.range = 32;
+                otherwise
+                    warning('no valid range code aquired from device');
+            end
+        case 'F5'
+            s.mode='CC';
+            switch rangeCode
+                case 'R4'
+                    s.range = 1.2E-3;
+                case 'R5'
+                    s.range = 12E-3;
+                case 'R6'
+                    s.range = 120E-3;
+                otherwise
+                    warning('no valid range code aquired from device');
+            end
+        otherwise
+            warning('no valid range code aquired from device');
+    end
+
+    res = sscanf(data{4},'LV%dLA%d');
+    s.limit_V=res(1);
+    s.limit_A=res(2);
+
+    s.output_value=sscanf(data{2}(6:end-1),'%f');
+    
+    times=regexp(data{3},'PI([.\d]*)SW([.\d]*)M(\d*)','tokens');
+    s.time_interval=str2num(times{1}{1});
+    s.time_sweep=str2num(times{1}{2});
+    s.run_mode=str2num(times{1}{3});
+
+
+    obj.UserData.lastStatus=s;
+else
+    s=obj.UserData.lastStatus;
+end
+    </MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>goSlowTo</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function goSlowTo(obj,val,time)
+%go slowly to certian value in given time
+
+if nargin &lt; 3
+    time=1;
+end
+
+if time ~=floor(time)
+    time=ceil(time);
+    warning('goSlowTo only supports full seconds');
+    %this is due to the limitation of time_interval to full seconds
+end
+
+ obj.Sweep.time_interval=time;
+ obj.Sweep.time_sweep=time;
+ invoke(obj.Sweep,'setSequence',val);
+ invoke(obj.Sweep,'step');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+      <Group>
+         <Name>sweep</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="sweep1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>time_interval</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+d=invoke(obj.Parent,'decodeStatus');
+propertyValue=d.time_interval;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+obj.Parent.UserData.lastStatus.timestamp=0; %reset cache
+g=obj.Parent.Interface;
+fprintf(g,sprintf('PI%1.0f',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="3600.0" Min="0.1"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.1</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>time_sweep</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+d=invoke(obj.Parent,'decodeStatus');
+propertyValue=d.time_sweep;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+obj.Parent.UserData.lastStatus.timestamp=0; %reset cache
+g=obj.Parent.Interface;
+fprintf(g,sprintf('SW%1.0f',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="3600.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>continu</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="RU3" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>halt</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="RU0" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>run</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="RU2" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>setSequence</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function setSequence(obj,val)
+%unfortunately properties have to be scalar. As we want to input an array
+%we have to use a function for this ... 
+
+I=obj.Parent.Interface;
+
+%use only first 50 values
+if numel(val) &gt; 50
+    warning('discarding last %f values in sequence',numel(val)-50);
+    val=val(1:50);
+end
+
+fprintf(I,'PRS');
+for i=1:numel(val)
+    fprintf(I,sprintf('%sS%f',obj.Parent.UserData.lastStatus.RangeCode,val(i)));
+end
+fprintf(I,'PRE');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>step</Name>
+               <Location>sweep</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="RU1" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>X:\Transport\Documentation-LabN101\Software\MATLAB\jb-suite\drivers\femto_dlvpa100fd.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Voltage Amplifier</InstrumentType>
+   <InstrumentManufacturer>Femto</InstrumentManufacturer>
+   <InstrumentModel>DLPVA-100-F-D</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>ATI</Identify>
+   <Reset>ATZ</Reset>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.Interface.BaudRate=57600;
+obj.Interface.Terminator=13; %terminator: CR</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo/>
+         <MethodInfo/>
+      </Group>
+      <Group>
+         <Name>amplifier</Name>
+         <Description/>
+         <Command/>
+         <Size>2</Size>
+         <Mappings>
+            <ChannelMap Command="amplifier2" Index="2"/>
+            <ChannelMap Command="amplifier1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>coupling</Name>
+               <Location>amplifier</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+c=str2num(query(obj.Parent.Interface,sprintf('ATC%1.0f?',obj.HwIndex)));
+
+if c==1
+    propertyValue='AC';
+else
+    propertyValue='DC';
+end
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Parent.Interface,sprintf('ATC%1.0f=%s',obj.HwIndex,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="AC" Value="1"/>
+                     <Enum Name="DC" Value="0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>AC</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>gain</Name>
+               <Location>amplifier</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+flushinput(obj.Parent.Interface);
+gain=1+str2num(query(obj.Parent.Interface,sprintf('ATG%1.0f?',obj.HwIndex)));
+
+propertyValue=10^(gain);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+gain=int8(log(propertyValue)/log(10))-1;
+fprintf(obj.Parent.Interface,sprintf('ATG%1.0f=%1.0f',obj.HwIndex,gain));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>10.0</Value>
+                     <Value>100.0</Value>
+                     <Value>1000.0</Value>
+                     <Value>10000.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>10.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>lowpass</Name>
+               <Location>amplifier</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+c=str2num(query(obj.Parent.Interface,sprintf('ATF%1.0f?',obj.HwIndex)));
+
+if c==1
+    propertyValue='1kHz';
+else
+    propertyValue='100kHz';
+end
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Parent.Interface,sprintf('ATF%1.0f=%s',obj.HwIndex,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="1kHz" Value="1"/>
+                     <Enum Name="100kHz" Value="0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1kHz</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>overload</Name>
+               <Location>amplifier</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=str2num(query(obj.Parent.Interface,sprintf('ATO%1.0f?',obj.HwIndex)));
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo/>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Dokumente und Einstellungen\wild\Eigene Dateien\MATLAB\Instrument Drivers\Agilent_34970A.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>SMU</InstrumentType>
+   <InstrumentManufacturer>HP</InstrumentManufacturer>
+   <InstrumentModel>4145B</InstrumentModel>
+   <InstrumentVersion>1.1</InstrumentVersion>
+   <Identify/>
+   <Reset/>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+for i=1:4
+    obj.UserData.channel(i).compliance=1E-3;
+    obj.UserData.channel(i).mode='CC';
+    obj.UserData.channel(i).range=1E-9;
+    obj.UserData.channel(i).value=0;
+end</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% initiate device
+fprintf(interface, 'US;DV1;DV2;DV3;DV4;');
+
+
+% End of function definition - DO NOT EDIT
+</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>MCode</Type>
+      <Code>function cleanup(obj)
+% This function is called before the object is disconnected.
+% OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+fprintf(interface, 'US;DV1;DV2;DV3;DV4;');
+% End of function definition - DO NOT EDIT
+</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo/>
+         <MethodInfo>
+            <Method>
+               <Name>setICh</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function setICh(obj,Input)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+% Get interface
+
+if length(Input) ~= 4
+    error('Input must be a 4-element vector.');
+end
+
+interface = get(obj,'interface');
+range=0;
+if Input(2) ~= 0 %autorange
+    ranges=[1E-9 1E-8 1E-7 1E-6 1E-5 1E-4 1E-3 1E-2 1E-1];
+    for i=1:numel(ranges)
+        if ranges(i) &gt;= Input(2)
+            range=i;
+            break;
+        end
+    end
+end
+
+% initiate device
+fprintf(interface,sprintf('DI%d,%d,%1.4f,%d;',Input(1),range,Input(3),Input(4)));
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>setVCh</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function setVCh(obj,Input)
+% input: channel, range, voltage, compliance
+
+if length(Input) ~= 4
+    error('Input must be a 4-element vector.');
+end
+
+% Get interface
+interface = get(obj,'interface');
+
+range=0;
+if Input(2) ~= 0 %autorange
+    ranges=[20 40 100];
+    for i=1:numel(ranges)
+        if ranges(i) &gt;= Input(2)
+            range=i;
+            break;
+        end
+    end
+end
+% initiate device
+%sprintf('DV%d,%d,%1.4f,%1.4f;',Input(1),range,Input(3),Input(4))
+fprintf(interface,sprintf('DV%d,%d,%1.4f,%d;',Input(1),range,Input(3),Input(4))); %channel, range, voltage, compliance
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>updateDisplay</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function updateDisplay(obj)
+% display the current output settings on the devive
+% unfortunately this routine takes about 470-500ms
+I=obj.Interface;
+
+lines{1}='# mode value   compl.';
+
+for i=1:4
+    m=obj.channel(i).mode;
+    c=obj.channel(i).compliance;
+    v=obj.channel(i).value;
+    if strcmp(m,'CC')
+        Vunit='A';
+        Cunit='V';
+    else
+        Vunit='V';
+        Cunit='A';
+    end
+    
+    if c &lt; 10E-6
+        c=c*1E6;
+        Cprefix='u';
+    elseif c &lt; 10E-3
+        c=c*1E3;
+        Cprefix='m';
+    else
+        Cprefix=' ';
+    end
+    
+    if v &lt; 10E-6
+        v=v*1E6;
+        Vprefix='u';
+    elseif v &lt; 10E-3
+        v=v*1E3;
+        Vprefix='m';
+    else
+        Vprefix=' ';
+    end
+    
+    %lines{2*i}=sprintf('%1.0f %s value %1.3f%s%s',i,m,v,Vprefix,Vunit);
+    %lines{2*i+1}=sprintf('        compl %1.3fm%s',c,Cunit);
+    
+    lines{i+1}=sprintf('%1.0f %s   %1.3f%s%s %1.3f%s%s',i,m,v,Vprefix,Vunit,c,Cprefix,Cunit);
+    
+end
+
+%fprintf(I,'GL2'); 
+%fprintf(I,'IN'); %initialize
+%fprintf(I,'SR 5,5'); % larger font
+%fprintf(I,'CP 0,11'); %move 11 lines up
+a=sprintf('%s\n','GL2','IN','SR 5,5','CP 0,11');
+for i=1:numel(lines)
+    a=sprintf('%s\nCP 0,-1',a); %move curser one line down
+    a=sprintf('%s\nLB%s%s%s',a,char(13),lines{i},char(3)); %carriage return, content, escape-sequence
+end
+    
+fprintf(I,sprintf('%s%s',a,char(3)));
+
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+      <Group>
+         <Name>channel</Name>
+         <Description/>
+         <Command/>
+         <Size>4</Size>
+         <Mappings>
+            <ChannelMap Command="4" Index="4"/>
+            <ChannelMap Command="3" Index="3"/>
+            <ChannelMap Command="2" Index="2"/>
+            <ChannelMap Command="1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>compliance</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+propertyValue=obj.Parent.UserData.channel(obj.HwIndex).compliance;
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+obj.Parent.UserData.channel(obj.HwIndex).compliance=propertyValue;
+invoke(obj,'set');</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+ 
+propertyValue=obj.Parent.UserData.channel(obj.HwIndex).mode;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+obj.Parent.UserData.channel(obj.HwIndex).mode=propertyValue;</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>CV</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+propertyValue=obj.Parent.UserData.channel(obj.HwIndex).range;
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+[rangeIndex propertyValue]=invoke(obj,'rangeIndex',propertyValue); %get range index
+
+obj.Parent.UserData.channel(obj.HwIndex).range=propertyValue;
+invoke(obj,'set');</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>value</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+propertyValue=obj.Parent.UserData.channel(obj.HwIndex).value;
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+%check if neccesary values are defined
+
+obj.Parent.UserData.channel(obj.HwIndex).value=propertyValue;
+invoke(obj,'set');</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>getI</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=getI(obj)
+g=obj.Parent.Interface;
+
+reading=query(g,sprintf('TI%s',obj.HwName));
+reading=str2double(reading(4:end));</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getV</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=getV(obj)
+g=obj.Parent.Interface;
+
+reading=query(g,sprintf('TV%s',obj.HwName));
+reading=str2double(reading(4:end));</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>rangeIndex</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function [n value]=rangeIndex(obj,val)
+Iranges=[1E-9 1E-8 1E-7 1E-6 1E-5 1E-4 1E-3 1E-2 1E-1];
+Vranges=[20 40 100];
+
+if(strcmp(obj.mode,'CV'))
+    ranges=Vranges;
+elseif(strcmp(obj.mode,'CC'))
+    ranges=Iranges;
+end
+
+n=find(ranges &gt;= abs(val),1); %find lowest range, that is high enough
+value=ranges(n);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>set</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function set(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+if(strcmp(obj.mode,'unknown'))
+    error('cannot set value: unknown mode!');
+end
+if(isnan(obj.compliance))
+    error('cannot set value: undefined compliance!');
+end
+if(isnan(obj.range))
+    error('cannot set value: undefined range!');
+end
+
+
+
+[rangeIndex rangeValue]=invoke(obj,'rangeIndex',obj.range); %get range index
+if(strcmp(obj.mode,'CC'))
+    mode='I';
+else
+    mode='V';
+end
+
+g=obj.Parent.Interface;
+fprintf(g,sprintf('D%s%d,%d,%1.4E,%1.4E;',mode,obj.HwIndex,rangeIndex,obj.value,obj.compliance)); %channel, range, voltage, compliance
+%invoke(obj.Parent,'updateDisplay'); %too slow unfortunately: takes about 470ms</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

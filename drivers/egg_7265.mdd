@@ -1,0 +1,871 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Users\jonathan.becker\Dropbox\wsi-backup\transport\software\jb-suite\drivers\egng_7265.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Lock-In Amplifier</InstrumentType>
+   <InstrumentManufacturer>EG&amp;G</InstrumentManufacturer>
+   <InstrumentModel>7260,7265</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>ID</Identify>
+   <Reset>ADF 1</Reset>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+
+
+obj.UserData.IntegrationUntil=Inf; %internal singifier, when the integration cycle started by invoking 'integration_start' is over (compare this value to 'now')</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+
+</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>bandwidth</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>ENBW.?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>Equivalent noise bandwidth In fixed point mode, reports the equivalent noise bandwidth of the output low-pass filters at the current time constant setting in microhertz. In floating point mode, reports the equivalent noise bandwidth of the output low-pass filters at the current time constant setting in hertz.
+
+NOTE: This command is not available when the reference frequency exceeds 60 kHz.</Description>
+            </Property>
+            <Property>
+               <Name>current_noise</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>NHZ.</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>Causes the lock-in amplifier to respond with the square root of the noise spectral
+density measured at the Y channel output, expressed in volt/√Hz or amps/√Hz referred
+to the input. This measurement assumes that the Y channel output is Gaussian with
+zero mean. (Section 3.3.16). The command is only available in floating point mode.
+NOTE: This command is not available when the reference frequency exceeds
+60 kHz.</Description>
+            </Property>
+            <Property>
+               <Name>filt_slope</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SLOPE </ConfigureCommand>
+                     <QueryCommand>SLOPE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="6db/octace" Value="0"/>
+                     <Enum Name="12db/octace" Value="1"/>
+                     <Enum Name="18db/octace" Value="2"/>
+                     <Enum Name="24db/octace" Value="3"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>6db/octace</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>filt_syncTC</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SYNC </ConfigureCommand>
+                     <QueryCommand>SYNC?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Boolean</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>off</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Synchronous time constant control
+At reference frequencies below 10 Hz, if the synchronous time constant is enabled,
+then the actual time constant of the output filters is not generally the selected value T
+but rather a value equal to an integer number of reference cycles. If T is greater than 1
+cycle, the time constant is between T/2 and T. The parameter n has the following
+significance:
+n Effect
+0 Synchronous time constant disabled
+1 Synchronous time constant enabled</Description>
+            </Property>
+            <Property>
+               <Name>integration_done</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+%check wether the integration-timer started by 'integration_start' has run out.
+
+t=now;
+
+if obj.UserData.IntegrationUntil &lt; t
+    propertyValue=1;
+else
+    propertyValue=0;
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>RANGE </ConfigureCommand>
+                     <QueryCommand>RANGE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="Signal Recovery" Value="0"/>
+                     <Enum Name="Vector Voltmeter" Value="1"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>Signal Recovery</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Signal Recovery/Vector Voltmeter mode selector
+The value of n sets the operating mode of the instrument as follows:
+n Mode
+0 Signal Recovery
+1 Vector Voltmeter</Description>
+            </Property>
+            <Property>
+               <Name>osc_amplitude</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=query(obj.Interface,'OA.?');</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+g=obj.Interface;
+fprintf(g,sprintf('OA. %1.6E',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="5.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>osc_freq</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=query(obj.Interface,'OF.?');</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+g=obj.Interface;
+fprintf(g,sprintf('OF. %1.8E',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="250000.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+g=obj.Interface;
+n=query(g,'SEN?');
+im=obj.sig_imode;
+
+names.('low_noise')      = {'n\a', 'n\a', 'n\a',  'n\a',  'n\a',  'n\a',   '2fA',   '5fA',   '10fA', '20fA', '50fA', '100fA', '200fA', '500fA', '1pA',   '2pA',   '5pA',   '10pA','20pA','50pA','100pA','200pA','500pA','1nA',   '2nA',   '5nA',   '10nA' };
+names.('high_bandwidth') = {'2fA', '5fA', '10fA', '20fA', '50fA', '100fA', '200fA', '500fA', '1pA',  '2pA',  '5pA',  '10pA',  '20pA',  '50pA',  '100pA', '200pA', '500pA', '1nA', '2nA', '5nA', '10nA', '20nA', '50nA', '100nA', '200nA', '500nA', '1uA'  };
+names.('off')            = {'2nV', '5nV', '10nV', '20nV', '50nV', '100nV', '200nV', '500nV', '1uV',  '2uV',  '5uV',  '10uV',  '20uV',  '50uV',  '100uV', '200uV', '500uV', '1mV', '2mV', '5mV', '10mV', '20mV', '50mV', '100mV', '200mV', '500mV', '1V'   };
+
+propertyValue=names.(im){str2num(n)};</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% set range, possible inputs are: string with range or numeric (next
+% greater range will be selected)
+
+im=obj.sig_imode;
+
+names.('low_noise')      = {'n\a', 'n\a', 'n\a',  'n\a',  'n\a',  'n\a',   '2fA',   '5fA',   '10fA', '20fA', '50fA', '100fA', '200fA', '500fA', '1pA',   '2pA',   '5pA',   '10pA','20pA','50pA','100pA','200pA','500pA','1nA',   '2nA',   '5nA',   '10nA' };
+names.('high_bandwidth') = {'2fA', '5fA', '10fA', '20fA', '50fA', '100fA', '200fA', '500fA', '1pA',  '2pA',  '5pA',  '10pA',  '20pA',  '50pA',  '100pA', '200pA', '500pA', '1nA', '2nA', '5nA', '10nA', '20nA', '50nA', '100nA', '200nA', '500nA', '1uA'  };
+names.('off')            = {'2nV', '5nV', '10nV', '20nV', '50nV', '100nV', '200nV', '500nV', '1uV',  '2uV',  '5uV',  '10uV',  '20uV',  '50uV',  '100uV', '200uV', '500uV', '1mV', '2mV', '5mV', '10mV', '20mV', '50mV', '100mV', '200mV', '500mV', '1V'   };
+
+numeric.('low_noise')      = [NaN,   NaN,   NaN,    NaN,    NaN,    NaN,     2E-15,   5E-15,   10E-15, 20E-15, 50E-15, 100E-15, 200E-15, 500E-15, 1E-12,   2E-12,   5E-12,   10E-12, 20E-12, 50E-12, 100E-12, 200E-12, 500E-12, 1E-9,   2E-9,   5E-9,   10E-9 ];
+numeric.('high_bandwidth') = [2E-15, 5E-15, 10E-15, 20E-15, 50E-15, 100E-15, 200E-15, 500E-15, 1E-12,  2E-12,  5E-12,  10E-12,  20E-12,  50E-12,  100E-12, 200E-12, 500E-12, 1E-9,   2E-9,   5E-9,   10E-9,   20E-9,   50E-9,   100E-9, 200E-9, 500E-9, 1E-6  ];
+numeric.('off')            = [2E-9,  5E-9,  10E-9,  20E-9,  50E-9,  100E-9,  200E-9,  500E-9,  1E-6,   2E-6,   5E-6,   10E-6,   20E-6,   50E-6,   100E-6,  200E-6,  500E-6,  1E-3,   2E-3,   5E-3,   10E-3,   20E-3,   50E-3,   100E-3, 200E-3, 500E-3, 1     ];
+
+
+names  = names.(im);
+numeric= numeric.(im);
+
+if(isnumeric(propertyValue))
+    ind=find(numeric &gt;= abs(propertyValue),1);
+else
+    ind=find(ismember(names,propertyValue));
+end
+
+if not(isempty(ind))
+    g=obj.Interface;
+    fprintf(g,sprintf('SEN %d',ind));
+else
+    error('requested invalid range. Possible ranges are: %s, (%d to %d)',sprintf('%s ',names{:}),numeric(1),numeric(end));
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>range_numeric</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>SEN.</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_freq_meter</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>FRQ?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_harmonic</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>REFN </ConfigureCommand>
+                     <QueryCommand>REFN?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="65535.0" Min="1.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Reference harmonic mode control
+The value of n sets the reference channel to one of the NF modes, or restores it to the
+default 1F mode. The value of n is in the range 1 to 65535.</Description>
+            </Property>
+            <Property>
+               <Name>ref_input</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>IE </ConfigureCommand>
+                     <QueryCommand>IE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="internal" Value="0"/>
+                     <Enum Name="rear (external)" Value="1"/>
+                     <Enum Name="front (external)" Value="2"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>internal</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>REFMODE </ConfigureCommand>
+                     <QueryCommand>REFMODE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="Single Reference / Virtual Reference" Value="0"/>
+                     <Enum Name="Dual Harmonic" Value="1"/>
+                     <Enum Name="Dual Reference" Value="2"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>Single Reference / Virtual Reference</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_phase</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>REFP </ConfigureCommand>
+                     <QueryCommand>REFP?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_acgain</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>ACGAIN </ConfigureCommand>
+                     <QueryCommand>ACGAIN?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                     <Value>2.0</Value>
+                     <Value>3.0</Value>
+                     <Value>4.0</Value>
+                     <Value>5.0</Value>
+                     <Value>6.0</Value>
+                     <Value>7.0</Value>
+                     <Value>8.0</Value>
+                     <Value>9.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>AC Gain control
+Sets the gain of the signal channel amplifier. Values of n from 0 to 9 can be entered,
+corresponding to the range 0 dB to 90 dB in 10 dB steps.</Description>
+            </Property>
+            <Property>
+               <Name>sig_acgain_auto</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=str2num(query(obj.Interface,'AUTOMATIC?'));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if propertyValue
+    fprintf(obj.Interface,'AUTOMATIC 1');
+else
+    fprintf(obj.Interface,'AUTOMATIC 0');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>0 AC Gain is under manual control, either using the front panel or the ACGAIN
+command
+1 Automatic AC Gain control is activated, with the gain being adjusted according to
+the full-scale sensitivity setting</Description>
+            </Property>
+            <Property>
+               <Name>sig_coupling</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>CP </ConfigureCommand>
+                     <QueryCommand>CP?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="AC" Value="0"/>
+                     <Enum Name="DC" Value="1"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>AC</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Input connector coupling mode control
+The value of n sets the input coupling mode according to the following table:
+n Coupling mode
+0 AC
+1 DC</Description>
+            </Property>
+            <Property>
+               <Name>sig_fet</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>FET </ConfigureCommand>
+                     <QueryCommand>FET?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="fet" Value="1"/>
+                     <Enum Name="bipolar" Value="0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>fet</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Voltage mode input device control
+The value of n selects the input device according to the following table:
+n Selection
+0 Bipolar device, 10 kΩ input impedance, 2 nV/√Hz voltage noise at 1 kHz
+1 FET, 10 MΩ input impedance, 5 nV/√Hz voltage noise at 1 kHz</Description>
+            </Property>
+            <Property>
+               <Name>sig_float</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>FLOAT </ConfigureCommand>
+                     <QueryCommand>FLOAT?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Input connector shield float/ground control
+The value of n sets the input connector shield switch according to the following table:
+n Selection
+0 Ground
+1 Float (connected to ground via a 1 kΩ resistor)</Description>
+            </Property>
+            <Property>
+               <Name>sig_imode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>IMODE </ConfigureCommand>
+                     <QueryCommand>IMODE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="off" Value="0"/>
+                     <Enum Name="high_bandwidth" Value="1"/>
+                     <Enum Name="low_noise" Value="2"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>off</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>IMODE [n] Current/Voltage mode input selector
+The value of n sets the input mode according to the following table:
+n Input mode
+0 Current mode off - voltage mode input enabled
+1 High bandwidth (HB) current mode enabled - connect signal to B input connector
+2 Low noise (LN) current mode enabled - connect signal to B input connector
+If n = 0 then the input configuration is determined by the VMODE command.
+If n &gt; 0 then current mode is enabled irrespective of the VMODE setting</Description>
+            </Property>
+            <Property>
+               <Name>sig_linefilter</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>LF </ConfigureCommand>
+                     <QueryCommand>LF?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="50Hz" Value="1"/>
+                     <Enum Name="100Hz" Value="2"/>
+                     <Enum Name="50Hz+100Hz" Value="3"/>
+                     <Enum Name="off" Value="0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>50Hz</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_sample_rate</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SAMPLE</ConfigureCommand>
+                     <QueryCommand>SAMPLE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                     <Value>2.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>Main analog-to-digital converter sample rate control
+The sampling rate of the main analog-to-digital converter, which is nominally
+166 kHz, may be adjusted from this value to avoid problems caused by the aliasing of
+interfering signals into the output passband.
+n may be set to 0, 1 or 2, corresponding to three different sampling rates (not
+specified) near 166 kHz.</Description>
+            </Property>
+            <Property>
+               <Name>sig_vmode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>VMODE </ConfigureCommand>
+                     <QueryCommand>VMODE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="test" Value="0"/>
+                     <Enum Name="A" Value="1"/>
+                     <Enum Name="-B" Value="2"/>
+                     <Enum Name="A-B" Value="3"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>test</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>VMODE [n] Voltage input configuration
+The value of n sets up the input configuration according to the following table:
+n Input configuration
+0 Both inputs grounded (test mode)
+1 A input only
+2 -B input only
+3 A-B differential mode
+Note that the IMODE command takes precedence over the VMODE command.</Description>
+            </Property>
+            <Property>
+               <Name>timeconstant</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+times=[ 10E-6 20E-6 40E-6 80E-6 160E-6 320E-6 640E-6 5E-3 10E-3 20E-3 50E-3 100E-3 200E-3 500E-3 1 2 5 10 20 50 100 200 500 1E3 2E3 5E2 10E3 20E3 50E3 100E3];
+
+g=obj.Interface;
+n=query(g,'TC?');
+propertyValue=times(str2num(n)+1);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+times=[ 10E-6 20E-6 40E-6 80E-6 160E-6 320E-6 640E-6 5E-3 10E-3 20E-3 50E-3 100E-3 200E-3 500E-3 1 2 5 10 20 50 100 200 500 1E3 2E3 5E2 10E3 20E3 50E3 100E3];
+
+[idx idx]=min(abs(times-propertyValue));
+
+g=obj.Interface;
+fprintf(g,sprintf('TC %d',idx-1));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>sets timeconstant to the nearest value</Description>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>autophase</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="AQN" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description>Auto-Phase (auto quadrature null)
+The instrument adjusts the reference phase to maximize the X channel output and
+minimize the Y channel output signals.</Description>
+            </Method>
+            <Method>
+               <Name>autorange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="AS" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description>Perform an Auto-Sensitivity operation
+The instrument adjusts its full-scale sensitivity so that the magnitude output lies
+between 30% and 90% of full-scale.</Description>
+            </Method>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getX(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'X.?');
+
+reading = str2double(reading);
+propertyValue=reading;
+
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getXY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getXY(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running, start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+g=obj.Interface;
+reading=query(g,'XY.?');
+
+reading = regexp(reading, ',', 'split');
+reading = str2double(reading);
+if numel(reading) ==1
+    propertyValue=reading(1);
+else
+    propertyValue = reading(1)+1i*reading(2);
+end
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>integration_start</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function integration_start(obj,varargin)
+% start the integration timer, nTC: #of timeconstants to wait, default: 5
+
+if nargin &lt; 2
+    nTC=5;
+else
+    nTC=varargin{1};
+end
+
+a=now;
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+
+obj.UserData.IntegrationUntil = a +  s*nTC*obj.timeconstant;
+
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

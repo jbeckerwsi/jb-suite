@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Dokumente und Einstellungen\wild\Eigene Dateien\MATLAB\Instrument Drivers\Agilent_34970A.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Switch</InstrumentType>
+   <InstrumentManufacturer>HP</InstrumentManufacturer>
+   <InstrumentModel>3488A</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify/>
+   <Reset/>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo/>
+         <MethodInfo>
+            <Method>
+               <Name>ChClose</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function ChClose(obj, ch)
+%close a single relay
+% ch is number or string giving both channels describing a relay
+% e.g. ch 1 and ch 9 -&gt; chNum = 19 or '19'; ch 5 and ch 13 -&gt; 513
+% uses ChNum2Code uses MatStyle2DevStyle
+% -- Dominik Irber, 09.01.2015
+
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+% Get interface
+interface = get(obj ,'interface');
+
+% test input and transform to device style input
+chTmp = invoke(obj,'InputCheck',ch);
+devChannel = invoke(obj,'MatStyle2DevStyle',chTmp);
+
+fprintf(interface, 'CLOSE %s', devChannel);
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ChOpen</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function ChOpen(obj, ch)
+%open a single relay
+% ch is number or string giving both channels describing a relay
+% e.g. ch 1 and ch 9 -&gt; chNum = 19 or '19'; ch 5 and ch 13 -&gt; 513
+% uses ChNum2Code uses MatStyle2DevStyle
+% -- Dominik Irber, 09.01.2015
+
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+% Get interface
+interface = get(obj ,'interface');
+
+% test input and transform to device style input
+chTmp = invoke(obj,'InputCheck',ch);
+devChannel = invoke(obj,'MatStyle2DevStyle',chTmp);
+
+fprintf(interface, 'OPEN %s', devChannel);
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ChView</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function r = ChView(obj, ch)
+%view state of single relay
+% r is logical: true if ch is open
+% ch is number or string giving both channels describing a relay
+% e.g. ch 1 and ch 9 -&gt; chNum = 19 or '19'; ch 5 and ch 13 -&gt; 513
+% uses ChNum2Code uses MatStyle2DevStyle
+% -- Dominik Irber, 09.01.2015
+
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+% Get interface
+interface = get(obj ,'interface');
+
+% test input and transform to device style input
+chTmp = invoke(obj,'InputCheck',ch);
+devChannel = invoke(obj,'MatStyle2DevStyle',chTmp);
+
+fprintf(interface, 'VIEW %s', devChannel);
+
+reading1 = fscanf(interface);
+
+% open (0/false) and close (1/true) are set in opposite style to switcher
+if strcmp(reading1(1:4),'OPEN')
+	r = logical(0);
+elseif strcmp(reading1(1:4),'CLOS')
+	r = logical(1);
+else
+	warning('Something strange happened while viewing a channel')
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ColSwitch</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function ColSwitch(obj, ch)
+%switch a connection within a column (columns are 1-8; 9-16 are rows)
+% checks if just one row is connected to column (otherwise: warning) and than changes the row
+% first closes new connection, THEN opens old connection(s)
+% input is simple relay, col is determined automatically
+% uses ChView, ChClose, ChOpen
+% -- Dominik Irber, 08.01.2015
+
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% test input
+ch2Close = invoke(obj,'InputCheck',ch);
+
+% get column number and row number
+col = ch2Close(1);
+row = ch2Close(2);
+
+% check if just one row is connected to current column
+for i = 9:16
+	chTmp = [ col , i ];
+	tmp(i-8) = invoke(obj,'ChView',chTmp);
+end
+if ( sum(tmp) &gt;1 )	% OPEN = 1
+	warning('more than one row connected to col %f; no more longer ;-)', col)
+end
+
+% close "new" connection
+invoke(obj,'ChClose',ch2Close);
+% open "old" connection(s)
+for i = 9:16
+	chTmp2 = [ col , i ];
+	if ( tmp(i-8) ) &amp;&amp; ( i ~= row )	% just if tmp(i-8) is 0
+		invoke(obj,'ChOpen',chTmp2);
+	end
+end
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>DevDisplay</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function DevDisplay(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>DevDisplayOn</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands/>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>InputCheck</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function ch = InputCheck(obj, chNum)
+%checks if input is in correct range and format
+% allowed input: matrix e.g. [1 14], number e.g. 114 and string e.g. '114'
+% output is matrix [ch1 ch2]
+% e.g. ch 1 and ch 9 -&gt; chNum = [1 9] or [9 1], 19 or '19'; ch 5 and ch 13 -&gt; 513
+% in case of number or string, first channel must be 1-8 and 2nd 9-16
+% -- Dominik Irber, 09.01.2015
+
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% test if input is matrix/number
+if isnumeric(chNum)
+	% case: matrix
+	if sum( size(chNum) ) == 3
+		chTmp = uint16(chNum);	% cut decimal places
+		if chTmp ~= chNum	% check if no decimal places were cut
+			warning('Channel %d is no valid input because it is not an interger value',chNum)
+			devChannel = '000';
+		end
+		isString = logical(0);
+
+	% case: number
+	elseif sum( size(chNum) ) == 2	% simple number
+		tmp = uint16(chNum);
+		if tmp ~= chNum	% check if no decimal places were cut
+			warning('Channel %d is no valid input because it is not an interger value',chNum)
+			devChannel = '000';
+		end
+		chTmpStr = num2str(tmp);
+		isString = logical(1);
+	else
+		warning('Channel %d is no valid input because it is not an interger value',chNum)
+			devChannel = '000';
+	end
+
+else	% string as input
+		chTmpStr = chNum;
+		isString = logical(1);
+end
+
+% if input was number or string: create matrix
+if isString == 1
+	% check format and capture tokens
+	regex = '^(?&lt;ch1&gt;[1-8])(?&lt;ch2&gt;9|1[0-6])$';
+	x = regexp(chTmpStr, regex);
+	if isempty(x)
+		warning('Channel %s is no valid input',tmpCh)
+		devChannel = '000';
+	end
+	
+	% convert to matrix
+	tok = regexp(chTmpStr, regex, 'names');
+	chTmp(1) = str2double(tok.ch1);
+	chTmp(2) = str2double(tok.ch2);
+end
+
+% sort matrix that smaller value is first argument
+if chTmp(1) &lt; chTmp(2)
+	ch(1) = double(chTmp(1));
+	ch(2) = double(chTmp(2));
+else
+	ch(2) = double(chTmp(1));
+	ch(1) = double(chTmp(2));
+end
+
+% check if values in right range
+if ~( sum( ch(1) == 1:8 ) )
+	warning('Channel 1 has no valid input')
+end
+if ~( sum( ch(2) == 9:16 ) )
+	warning('Channel 2 has no valid input')
+end
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>MatStyle2DevStyle</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function outStr = MatStyle2DevStyle(obj, ch)
+%converts an input with 8x8 notation to 4x 4x4 notation
+% e.g. [2 3] -&gt; 134
+% ch is array of two doubles
+% outStr is string parse to Switcher, i.e. ['CLOSE ', outStr]
+% -- Dominik Irber, 08.01.2015
+
+% typ. called by ChNum2Code
+
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% translate 8x8 in 4x 4x4
+switch ceil(ch(1)/4)
+	case 1
+		switch ceil( (ch(2)-8)/4 )
+			case 1
+				slot = '1';
+				ch2 = num2str(ch(1)-1);	% -1 because switcher counts 0 to 3
+				ch1 = num2str(ch(2)-9);
+			case 2
+				slot = '3';
+				ch2 = num2str(ch(1)-1);
+				ch1 = num2str(ch(2)-13);
+			otherwise
+				warning('Something strange happened in MatStyle2DevStyle')
+		end
+	case 2
+		switch ceil( (ch(2)-8)/4 )
+			case 1
+				slot = '2';
+				ch2 = num2str(ch(1)-5);
+				ch1 = num2str(ch(2)-9);
+			case 2
+				slot = '4';
+				ch2 = num2str(ch(1)-5);
+				ch1 = num2str(ch(2)-13);
+			otherwise
+				warning('Something strange happened in MatStyle2DevStyle')
+		end
+	otherwise
+		warning('Something strange happened in MatStyle2DevStyle in switch ceil(ch(1)/4)')
+end
+
+outStr = [slot, ch1, ch2];
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>Monitor</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function r = Monitor(obj, dummy)
+%show state of all relays
+% r is a 8x8 matrix; each element is 1 (open) or 0 (close)
+% uses ChView uses ChNum2Code uses MatStyle2DevStyle
+% -- Dominik Irber, 08.01.2015
+
+% as CMON just uses the device display and do not send info back to
+% computer, a self-made function
+
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+r = NaN(8,8);
+
+for row = 9:16
+	for col = 1:8
+		ch = [ col , row ];
+		r(row-8,col) = invoke(obj,'ChView',ch);
+	end
+end
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>Remote</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands/>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>Reset</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function Reset(obj, dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj ,'interface');
+
+fprintf(interface, 'CRESET 1,2,3,4');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>RowSwitch</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands/>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetByMatrix</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetByMatrix(obj,M)
+%input is 8x8 Matrix: 1 means close, 0 means open
+% -- Dominik Irber, 09.01.2015
+
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+for col = 1:8
+	for row = 9:16
+		% if entry is 0: Close relay
+		if ~M(row-8, col)
+			invoke(obj,'ChOpen', [col row]);
+		else
+			invoke(obj,'ChClose', [col row]);
+		end
+	end
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetByMatrixClose</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetByMatrix(obj,M)
+%takes an 8x8 Matrix: 1 means closed, 0 means open
+% -- Jonathan Becker, 07.01.2015
+
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+% Get interface
+
+
+%split matrix into pieces for each card
+m(:,:,1)= M(1:4,1:4);
+m(:,:,2)= M(1:4,5:8);
+m(:,:,3)= M(5:8,1:4);
+m(:,:,4)= M(5:8,5:8);
+
+if any(any(M)) % only do sth if there is sth to do ;)
+
+    command='CLOSE ';
+    for n=1:4
+        [row,col]=find(m(:,:,n)==1);
+        interleaved=reshape([row(:) col(:)]',2*size(row,1), []);
+        if numel(interleaved) &gt; 0
+            command=strcat(command,sprintf(strcat(',',num2str(n),'%d%d'),interleaved-1));
+        end
+    end
+    command(6)=' '; % remove 1st comma .... yeah, not the most elegant way. But hey: it does the job pretty efficient ;)
+    
+    interface = get(obj ,'interface');
+    fprintf(interface, command);
+end
+
+
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

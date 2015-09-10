@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\matlab-programs\jonathan\drivers\knick_s252.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>DC Power Supply</InstrumentType>
+   <InstrumentManufacturer>Knick</InstrumentManufacturer>
+   <InstrumentModel>S252</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>R ID</Identify>
+   <Reset>X RESET</Reset>
+   <Selftest/>
+   <Error>R ERROR</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.value=0;
+obj.range='auto';</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+r=query(g,'R RANGE');
+if strcmp(r(1:end-2),'RANGE AUTO')
+    propertyValue='auto';
+else
+    propertyValue=sscanf(r,'RANGE %EV');
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+if strcmp(propertyValue,'auto')
+    fprintf(g,'P RANGE AUTO');
+else
+    ranges=[5 20]; %not much going on here ;)
+    if(abs(propertyValue) &gt; 5)
+        range=ranges(2);
+    else
+        range=ranges(1);
+    end
+    fprintf(g,'P RANGE %d',range);
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="auto" Value="auto"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>upon arbitrary (double) input the instrument output range is set to the smallest possible value, that still allows to output the requested value:
+
+e.g.: 12  sets the range to 20V</Description>
+            </Property>
+            <Property>
+               <Name>value</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+r=query(g,'R OUT');
+propertyValue=sscanf(r,'OUT%e');</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+fprintf(g,sprintf('X OUT %E',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo/>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

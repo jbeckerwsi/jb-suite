@@ -1,0 +1,1245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Dokumente und Einstellungen\wild\Eigene Dateien\MATLAB\Instrument Drivers\Agilent_34970A.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>DC Voltage Source</InstrumentType>
+   <InstrumentManufacturer>Hewlett Packard</InstrumentManufacturer>
+   <InstrumentModel>7651</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>ID?</Identify>
+   <Reset>RST</Reset>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo/>
+         <MethodInfo>
+            <Method>
+               <Name>BTrigger</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function BTrigger(obj, time)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Check input
+if ~(isnumeric(time)&amp;(time&gt;0&amp;time&lt;=10000))
+    error('Time must be a double in units of milliseconds (0.001-10000).');
+else 
+    trigtime = roundn(time,-3);
+end
+
+% trigger
+fprintf(interface, 'USE 0');
+fprintf(interface, 'TRIGIN HIGH');
+fprintf(interface, 'USE 100');
+fprintf(interface, 'DCOFF 0');
+fprintf(interface, 'TRIGMODE GATE');
+fprintf(interface, 'TRIGIN HIGH');
+fprintf(interface, 'REAL TRIGARRAY(2047)');
+FillString = 'FILL TRIGARRAY';
+for i=1:30
+    FillString = [FillString ',0'];
+end
+if trigtime &lt; 0.1
+    fprintf(interface, 'FREQ 9765.625,9765.625');
+    n = 20000*trigtime;
+    for k=1:n
+        FillString = [FillString ',1'];
+    end
+else
+    freq = roundn(1000/(2*trigtime),-3); 
+    FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+    fprintf(interface, FreqString);
+    for i=1:1024
+        FillString = [FillString ',1'];
+    end
+end
+fprintf(interface, FillString);
+fprintf(interface, 'INTEGER TRIGARRAYI(2047)');
+fprintf(interface, 'FILLWF TRIGARRAY,TRIGARRAYI');
+fprintf(interface, 'APPLY WFV 0.04,TRIGARRAYI');
+fprintf(interface, 'USE 0');
+fprintf(interface, 'TRIGIN EXTBAR');
+fprintf(interface, 'USE 100');
+fprintf(interface, 'APPLY WFV 10');
+fprintf(interface, 'TRIGIN SGL');
+fprintf(interface, 'USE 0');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>EnableBTrigger</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function EnableBTrigger(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% trigger
+fprintf(interface, 'USE 0');
+fprintf(interface, 'TRIGIN HIGH');
+fprintf(interface, 'USE 100');
+fprintf(interface, 'DCOFF 0');
+fprintf(interface, 'FREQ 1000,1000');
+fprintf(interface, 'TRIGMODE GATE');
+fprintf(interface, 'TRIGIN HIGH');
+fprintf(interface, 'REAL TRIGARRAY(2047)');
+FillString = 'FILL TRIGARRAY';
+for i=1:30
+    FillString = [FillString ',0'];
+end
+for i=1:1024
+    FillString = [FillString ',1'];
+end
+fprintf(interface, FillString);
+fprintf(interface, 'INTEGER TRIGARRAYI(2047)');
+fprintf(interface, 'FILLWF TRIGARRAY,TRIGARRAYI');
+fprintf(interface, 'APPLY WFV 0.04,TRIGARRAYI');
+fprintf(interface, 'USE 0');
+fprintf(interface, 'TRIGIN EXTBAR');
+fprintf(interface, 'USE 100');
+fprintf(interface, 'APPLY WFV 10');
+fprintf(interface, 'USE 0');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>EnableEOI</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function EnableEOI(obj,state)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+if ~ischar(state)
+    error('Input must be a string ON or OFF.')
+end
+
+% Get interface
+interface = get(obj,'interface');
+
+switch state
+    case 'OFF'
+        fprintf(interface, 'END OFF');
+    case 'ON'
+        fprintf(interface, 'END ON');
+    otherwise
+        error('Invalid input argument. Enter ON or OFF.');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>EnableSingles</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function EnableSingles(obj,varargin)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+fprintf(interface, 'TRIGMODE GATE');
+fprintf(interface, 'TRIGIN HIGH');
+
+if nargin==1
+    polarity='+';
+elseif strcmp(varargin,'+')
+    polarity='+';
+elseif strcmp(varargin,'-')
+    polarity='-';
+else
+    error('Invalid input argument(s).');
+end
+
+fprintf(interface, 'REAL EINZEL(2047)');
+FillString = 'FILL EINZEL';
+for k=1:30
+    FillString = [FillString ',0'];
+end
+if strcmp(polarity,'+')
+    for i=1:1024
+        FillString = [FillString ',1'];
+    end
+elseif strcmp(polarity,'-')
+    for i=1:1024
+        FillString = [FillString ',-1'];
+    end
+end
+fprintf(interface, FillString);
+fprintf(interface, 'INTEGER EINZELI(2047)');
+fprintf(interface, 'FILLWF EINZEL,EINZELI');
+fprintf(interface, 'APPLY WFV 0.04,EINZELI');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadChannel</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading = ReadChannel(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'USE?');
+
+% Read response
+read = fscanf(interface);
+if (str2double(read)==0)
+    reading = 'UseChannel = A';
+elseif (str2double(read)==100)
+    reading = 'UseChannel = B';
+else
+    error('?????');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadDCOffset</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=ReadDCOffset(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'DCOFF?');
+reading=fscanf(interface);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadDelay</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=ReadDelay(obj, dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'CLROUT');
+fprintf(interface, 'DELAY?');
+
+% Read response
+reading = fscanf(interface);
+%reading = str2double(reading(5:end));</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadDuty</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=ReadDuty(obj, dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'DUTY?');
+
+% Read response
+reading = fscanf(interface);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadFreq</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=PULSE(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'FREQ?');
+reading=fscanf(interface);
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadOutput</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading = ReadOutput(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'END ON');
+fprintf(interface, 'OUTPUT?');
+
+% Read response
+reading = fscanf(interface);
+reading = str2double(reading);</MCode>
+               </Code>
+               <Description>ReadOutput
+
+
+reading = readDev(DevList, Dev , 'ReadOutput')
+----------------------------------------------------------
+
+Reads the current OutputSetting.</Description>
+            </Method>
+            <Method>
+               <Name>ReadOutputBufferSize</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading = ReadOutputBufferSize(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+reading = interface.OutputBufferSize;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadRange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=ReadRange(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'RANGE?');
+
+% Read response
+reading = fscanf(interface);
+%reading = str2double(reading(5:end));</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadStatus</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading = ReadStatus(obj,dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'STA?');
+binary = dec2bin(str2double(fscanf(interface)));
+disp(num2str(binary));
+
+count=0;
+ausgabe='Status:';
+laenge=length(binary);
+for l=1:laenge      
+    if ~(binary(l)=='0')
+        switch (laenge-l)
+            case 0
+                ausgabe=char(ausgabe, 'DATA AVAILABLE');
+            case 2
+                ausgabe=char(ausgabe, 'USER SERVICE REQUEST');
+            case 3
+                ausgabe=char(ausgabe, 'LOCAL');
+            case 4
+                ausgabe=char(ausgabe, 'READY');
+            case 5
+                ausgabe=char(ausgabe, 'ERROR');
+            case 6
+                ausgabe=char(ausgabe, 'SRQ SENT');
+            otherwise
+                ausgabe=char(ausgabe, ['NOT USED BIT ' num2str(laenge-l)]);
+        end
+    else
+        count=count+1;
+    end
+end
+if count==laenge
+    ausgabe = char('Status:','NO BITS SET');
+end
+reading=ausgabe;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadTrigger</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function readout=ReadTrigger(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'TRIGMODE?');
+
+% Read response
+reading = fscanf(interface);
+
+% again
+fprintf(interface, 'TRIGIN?');
+readout = char(['trigger mode = ' reading],['trigger source = ' fscanf(interface)]);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>ReadWaveform</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading=ReadWaveform(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'APPLY?');
+
+% Read response
+reading = fscanf(interface);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SendSingle</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function current(obj, dummy)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+fprintf(interface, 'SUB DOPPEL');
+fprintf(interface, 'TRIGIN SGL');
+% fprintf(interface, 'WAIT 0.00001');
+% fprintf(interface, 'TRIGIN SGL');
+fprintf(interface, 'SUBEND');
+fprintf(interface, 'CALL DOPPEL');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetACOutput</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetACOutput(obj, SetValues)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Check variables
+if ~(iscell(SetValues) &amp; length(SetValues)==5)
+    error('SetValues must be a 1x5 cell array containing waveform, amplitude, offset, duty and frequency.');
+end
+
+if ~(isnumeric(SetValues{5})&amp;(SetValues{5}&gt;=0&amp;SetValues{5}&lt;=1E6))
+    error('Frequency must be a double in units of hertz.');
+end
+
+if ~(isnumeric(SetValues{4})&amp;(SetValues{4}&gt;=5&amp;SetValues{4}&lt;=95))
+    error('Duty must be a double in percent.');
+end
+     
+if ~isnumeric(SetValues{3})
+    error('Offset must be a double in units of volts.');
+end
+
+% set conditions
+
+DutyString = ['DUTY ' num2str(SetValues{4})];
+fprintf(interface, DutyString);
+
+FreqString = ['FREQ ' num2str(SetValues{5}) ',' num2str(SetValues{5})];
+fprintf(interface,FreqString);
+
+OffsetString = ['DCOFF ' num2str(SetValues{3})];
+fprintf(interface,OffsetString);    
+
+% set output
+if ~(isnumeric(SetValues{2})&amp;SetValues{2}&gt;0)
+    error('Amplitude must be a double in units of volts.');
+end
+
+amplitude = SetValues{2};
+
+switch SetValues{1}
+    case 'sine'
+        SineString = ['APPLY ACV ' num2str(amplitude)];
+        fprintf(interface, SineString);
+    case 'ramp'
+        RampString = ['APPLY RPV ' num2str(amplitude)];
+        fprintf(interface, RampString);
+    case 'square'
+        SquareString = ['APPLY SQV ' num2str(amplitude)];
+        fprintf(interface, SquareString);
+    otherwise 
+        error('possible waveforms: sine, ramp or square.');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetChannel</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetChannel(obj,choice)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+if ~ischar(choice)
+    error('Input must be a string A or B.')
+end
+
+% Get interface
+interface = get(obj,'interface');
+
+switch choice
+    case 'A'
+        fprintf(interface, 'USE 0');
+    case 'B'
+        fprintf(interface, 'USE 100');
+    otherwise
+        error('Invalid input argument. Enter A or B.');
+end
+
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetDCOffset</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetDCOffset(obj, offset)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~isnumeric(offset)
+    error('SetValue must be a double in units of volts.')
+end 
+
+% Set properties
+OffString=['DCOFF ' num2str(offset)];
+fprintf(interface, OffString);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetDCOutput</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetDCOutput(obj, SetValue)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~isnumeric(SetValue)
+    error('SetValue must be a double in units of volt.')
+end
+
+% Send command
+SetValueString = ['APPLY DCV ' num2str(SetValue)];   
+fprintf(interface, SetValueString);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetDelay</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetDelay(obj, SetValue)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~isnumeric(SetValue)
+    error('SetValue must be a double in units of seconds.')
+end
+
+% Send command
+SetValuestring = ['DELAY ' num2str(SetValue)];
+fprintf(interface, SetValuestring);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetDuty</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetDuty(obj, duty)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~isnumeric(duty)
+    error('SetValue must be a double (5-95) in percent.')
+end
+
+% Set properties
+DutyString=['DUTY ' num2str(duty)];
+fprintf(interface, DutyString);
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetFreq</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetFreq(obj, freq)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~isnumeric(freq)
+    error('SetValue must be a double in units of hertz.')
+end
+
+% Set properties
+FreqString=['FREQ ' num2str(freq) ',' num2str(freq)];
+fprintf(interface, FreqString);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetOutputBufferSize</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetOutputBufferSize(obj,size)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~(isnumeric(size)&amp;size&gt;100)
+    error('Size must be a double &gt;100.');
+else
+    size1=round(size);
+end 
+
+disconnect(obj);
+interface.OutputBufferSize = size1;
+connect(obj);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetPulse</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function reading = SetPulse(obj,SetValues)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+fprintf(interface, 'TRIGIN HIGH');
+fprintf(interface, 'TRIGMODE GATE');
+
+% Check input
+if ~(iscell(SetValues)&amp;length(SetValues)==4)
+    error('SetValues must be a 1x4 cell array containing amplitude, pulse length, interval length and number of pulses');
+end
+
+if ~(isnumeric(SetValues{1})&amp;(SetValues{1}&gt;0&amp;SetValues{1}&lt;=10))
+    error('Amplitude must be a positive double in units of volts.');
+else
+    AmpString=['APPLY WFV ' num2str(2*SetValues{1})];
+    OffString='DCOFF 0';
+end
+
+if ~(isnumeric(SetValues{2})&amp;(SetValues{2}&gt;=0.001&amp;SetValues{2}&lt;=2000))
+    error('Pulse length must be a double in units of milliseconds (0.001-2000).');
+else
+    laenge=roundn(SetValues{2},-3);
+end
+
+if ~(isnumeric(SetValues{3})&amp;SetValues{3}&gt;=0.001)
+    error('Interval length must be a double in units of milliseconds (&gt;= 0.001).');
+else
+    abstand=roundn(SetValues{3},-3);
+end
+
+if ~(isnumeric(SetValues{4})&amp;SetValues{4}&gt;=0.5)
+    error('Number of pulses must be a positive integer.');
+else
+    anzahl=double(int16(SetValues{4}));
+end
+
+% Set properties
+fprintf(interface, 'REAL PULSFELD(2047)');
+FillString = 'FILL PULSFELD';
+dauer = anzahl*(laenge+abstand);
+if dauer &lt;= 0.1
+    trcase = 1; trigtime = 0;
+    for k=1:30
+        FillString = [FillString ',0'];
+    end
+    FreqString = 'FREQ 9765.625,9765.625';
+    Pfieldn = laenge*20000;
+    Ifieldn = abstand*20000;
+    for j=1:anzahl
+        for p=1:Pfieldn
+            FillString = [FillString ',1'];
+        end
+        for i=1:Ifieldn
+            FillString = [FillString ',0'];
+        end
+    end
+elseif ~(((laenge*anzahl/dauer)&gt;=0.001) &amp; ((abstand*anzahl/dauer)&gt;=0.001))
+    error('Maximum for resolution exceeded.');    
+elseif (((laenge/dauer)&gt;=0.001) &amp; ((abstand/dauer)&gt;=0.001))
+    trcase = 3; trigtime = 0;
+    dauer2 = ceil(dauer);
+    for k=1:30
+        FillString = [FillString ',0'];
+    end
+    freq = roundn(976.5625/dauer2,-3);
+    FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+    Pfieldn = laenge*2000/dauer2;
+    Ifieldn = abstand*2000/dauer2;
+    for j=1:anzahl
+        for p=1:Pfieldn
+            FillString = [FillString ',1'];
+        end
+        for i=1:Ifieldn
+            FillString = [FillString ',0'];
+        end
+    end
+    if ~(length(FillString)&lt;=4109)
+        error('Array too small.');
+    end
+else
+    try
+        trcase = 2;
+        Tdauer = (laenge+abstand);
+        trigtime = Tdauer*(anzahl-0.5);
+        freq = roundn(1000/Tdauer,-3);
+        FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+        Pfieldn = round(laenge*2048 / Tdauer);
+        Ifieldn = round(abstand*2048 / Tdauer);
+        if ~((Pfieldn+Ifieldn)==2048)
+            Narray = num2str(Pfieldn+Ifieldn);
+            error(['Narray = ' Narray]);
+        end
+        for i=1:ceil(Ifieldn/2)
+            FillString = [FillString ',0'];
+        end
+        for p=1:Pfieldn
+            FillString = [FillString ',1'];
+        end
+        for i=1:fix(Ifieldn/2)
+            FillString = [FillString ',0'];
+        end        
+    catch 
+        error('High length/duration-resolution failed. Please adjust parameters.');
+    end
+end
+
+
+fprintf(interface, FillString);
+fprintf(interface, 'INTEGER PULSFI(2047)');
+fprintf(interface, 'FILLWF PULSFELD,PULSFI');
+AmpString = [AmpString ',PULSFI'];
+
+% Send commands
+fprintf(interface, FreqString);
+fprintf(interface, OffString);
+fprintf(interface, AmpString);
+
+reading = {trcase trigtime};</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetRange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetRange(obj, Range)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if Range=='Auto'
+    fprintf(interface, 'ARANGE');
+    return;
+elseif ~isnumeric(Range)
+    error('Range must be a double in units of volts (or amperes).');
+end
+
+% Send command
+RangeString = ['RANGE ' num2str(Range)];
+fprintf(interface, RangeString);
+
+% check
+fprintf(interface, 'RANGE?');
+reading=str2double(fscanf(interface));
+if Range&gt;reading
+    error('Maximum for Range exceeded.');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetTrigger</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetTrigger(obj, Trigger)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+if ~(iscell(Trigger) &amp; length(Trigger)==2)
+    error('Trigger must be a 1x2 cell array containing trigger mode and source.');
+end
+
+% Get interface
+interface = get(obj,'interface');
+
+% Send command
+switch Trigger{1}
+    case 'OFF'
+        fprintf(interface, 'TRIGMODE OFF');
+    case 'ARMWF'
+        fprintf(interface, 'TRIGMODE ARMWF');
+    case 'GATE'
+        fprintf(interface, 'TRIGMODE GATE');
+    case 'DUALFR'
+        fprintf(interface, 'TRIGMODE DUALFR');
+    otherwise
+        error('Possible trigger modes: OFF, ARMWF, GATE and DUALFR.');
+end
+switch Trigger{2}
+    case 'TB0'
+        fprintf(interface, 'TRIGIN TB0');
+    case 'TB1'
+        fprintf(interface, 'TRIGIN TB1');
+    case 'EXT'
+        fprintf(interface, 'TRIGIN EXT');
+    case 'EXTBAR'
+        fprintf(interface, 'TRIGIN EXTBAR');
+    case 'LOW'
+        fprintf(interface, 'TRIGIN LOW');
+    case 'HIGH'
+        fprintf(interface, 'TRIGIN HIGH');
+    case 'HOLD'
+        fprintf(interface, 'TRIGIN HOLD');
+    case 'SGL'
+        fprintf(interface, 'TRIGIN SGL');
+    otherwise
+        error('Possible trigger sources: EXT, EXTBAR, HIGH, LOW, HOLD, SGL, TB0 and TB1.');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SETWFV</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SETWFV(obj,SetValues)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Check input
+if ~(iscell(SetValues)&amp;length(SetValues)==4)
+    error('SetValues must be a 1x4 cell array containing filling array, amplitude, dc-offset and frequency.');
+end
+
+if ~(isnumeric(SetValues{1})&amp;length(SetValues{1})&lt;=2048)
+    error('Filling array must not contain more than 2048 entries.');
+end
+
+if ~(isnumeric(SetValues{2})&amp;(SetValues{2}&lt;=10&amp;SetValues{2}&gt;0))
+    error('Amplitude must be a double in units of volts.');
+else
+    AmpString = ['APPLY WFV ' num2str(SetValues{2}) ',A'];
+end
+
+if ~(isnumeric(SetValues{3}))
+    error('DC-Offset must be a double in units of volts.');
+else
+    OffString = ['DCOFF ' num2str(SetValues{3})];
+end
+
+if ~(isnumeric(SetValues{4})&amp;(SetValues{4}&gt;=0.001&amp;SetValues{4}&lt;=1000000))
+    error('Frequency must be a double in units of hertz.');
+else
+    FreqString = ['FREQ ' num2str(SetValues{4}) ',' num2str(SetValues{4})];
+end
+
+% Fill array
+fprintf(interface, 'REAL A(2047)');
+FillString = 'FILL A';
+for k=1:length(SetValues{1})
+    FillString = [FillString ',' num2str(SetValues{1}(k))];
+end
+
+% Send command
+fprintf(interface, FillString);
+fprintf(interface, FreqString);
+fprintf(interface, OffString);
+fprintf(interface, AmpString);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>SetWFVAmplitude</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function SetWFVAmplitude(obj,amplitude)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+if ~(isnumeric(amplitude)&amp;(amplitude&lt;=10&amp;amplitude&gt;0))
+    error('Amplitude must be a double in units of volts.');
+else
+    AmpString = ['APPLY WFV ' num2str(amplitude)];
+end
+
+fprintf(interface, AmpString);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>Single</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function Single(obj, SetValues)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Check input
+if ~(iscell(SetValues)&amp;length(SetValues)==3)
+    error('SetValues must be a 1x3 cell array containing amplitude, pulse length and number of pulses.');
+end
+
+if ~(isnumeric(SetValues{1})&amp;(SetValues{1}&gt;0&amp;SetValues{1}&lt;=10))
+    error('Amplitude must be a positive double in units of volts.');
+else
+    AmpString=['APPLY WFV ' num2str(2*SetValues{1})];
+end
+
+if ~(isnumeric(SetValues{2})&amp;(SetValues{2}&gt;=0.001&amp;SetValues{2}&lt;=2000))
+    error('Pulse length must be a double in units of milliseconds (0.001-2000).');
+else
+    laenge=roundn(SetValues{2},-3);
+end
+
+if ~(isnumeric(SetValues{3})&amp;SetValues{3}&gt;=0.5)
+    error('Number of pulses must be a positive integer.');
+else
+    anzahl=double(int16(SetValues{3}));
+end
+
+% Set properties
+freq = 500/laenge;
+FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+time = 2*laenge*(anzahl-0.5);
+fprintf(interface, AmpString);
+fprintf(interface, FreqString);
+
+% Trigger signal
+fprintf(interface, 'USE 100');
+fprintf(interface, 'DCOFF 0');
+fprintf(interface, 'TRIGMODE GATE');
+fprintf(interface, 'TRIGIN HIGH');
+fprintf(interface, 'REAL TRIGARRAY(2047)');
+FillString = 'FILL TRIGARRAY';
+for i=1:30
+    FillString = [FillString ',0'];
+end
+if time &lt; 0.1
+    fprintf(interface, 'FREQ 9765.625,9765.625');
+    n = 20000*time;
+    for k=1:n
+        FillString = [FillString ',1'];
+    end
+else
+    freq = roundn(1000/(2*time),-3); 
+    FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+    fprintf(interface, FreqString);
+    for i=1:1024
+        FillString = [FillString ',1'];
+    end
+end
+fprintf(interface, FillString);
+fprintf(interface, 'INTEGER TRIGARRAYI(2047)');
+fprintf(interface, 'FILLWF TRIGARRAY,TRIGARRAYI');
+fprintf(interface, 'APPLY WFV 0.04,TRIGARRAYI');
+fprintf(interface, 'USE 0');
+fprintf(interface, 'TRIGIN EXTBAR');
+fprintf(interface, 'USE 100');
+fprintf(interface, 'APPLY WFV 10');
+fprintf(interface, 'TRIGIN SGL');
+fprintf(interface, 'USE 0');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>Singles</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function Singles(obj, SetValues)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+% Check input
+if ~(iscell(SetValues)&amp;length(SetValues)==3)
+    error('SetValues must be a 1x3 cell array containing amplitude, pulse length and number of pulses.');
+end
+
+if ~(isnumeric(SetValues{1})&amp;(SetValues{1}&gt;0&amp;SetValues{1}&lt;=10))
+    error('Amplitude must be a positive double in units of volts.');
+else
+    AmpString=['APPLY WFV ' num2str(2*SetValues{1})];
+end
+
+if ~(isnumeric(SetValues{2})&amp;(SetValues{2}&gt;=0.001&amp;SetValues{2}&lt;=2000))
+    error('Pulse length must be a double in units of milliseconds (0.001-2000).');
+else
+    laenge=roundn(SetValues{2},-3);
+end
+
+if ~(isnumeric(SetValues{3})&amp;SetValues{3}&gt;=0.5)
+    error('Number of pulses must be a positive integer.');
+else
+    anzahl=double(int16(SetValues{3}));
+end
+
+% Set properties
+freq = 500/laenge;
+FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+time = 2*laenge*(anzahl-0.5);
+fprintf(interface, AmpString);
+fprintf(interface, FreqString);
+
+% Trigger signal
+if anzahl==1 &amp; time&gt;=0.1
+    fprintf(interface, 'TRIGIN SGL');
+elseif time&gt;=0.027
+    fprintf(interface, 'USE 100');
+    Bfreq = roundn(500/time,-3); 
+    BFreqString = ['FREQ ' num2str(Bfreq) ',' num2str(Bfreq)];
+    fprintf(interface, BFreqString);
+    fprintf(interface, 'TRIGIN SGL');
+    fprintf(interface, 'USE 0');
+else
+    fprintf(interface, 'TRIGIN HIGH');
+    fprintf(interface, 'USE 100');
+    fprintf(interface, 'REAL TRIGA(2047)');
+    FillString = 'FILL TRIGA';
+    for i=1:30
+        FillString = [FillString ',0'];
+    end
+    fprintf(interface, 'FREQ 9765.625,9765.625');
+    n = 20000*time;
+    for k=1:n
+        FillString = [FillString ',1'];
+    end
+    fprintf(interface, FillString);
+    fprintf(interface, 'INTEGER TRIGAI(2047)');
+    fprintf(interface, 'FILLWF TRIGA,TRIGAI');
+    fprintf(interface, 'APPLY WFV 0.04,TRIGAI');
+    fprintf(interface, 'USE 0');
+    fprintf(interface, 'TRIGIN EXTBAR');
+    fprintf(interface, 'USE 100');
+    fprintf(interface, 'APPLY WFV 10');
+    fprintf(interface, 'TRIGIN SGL');
+    fprintf(interface, 'USE 0');
+    fprintf(interface, 'TRIGIN HIGH');
+    fprintf(interface, 'USE 100');
+    fprintf(interface, 'APPLY WFV 10,TRIGARRAYI');
+    fprintf(interface, 'USE 0');
+    fprintf(interface, 'TRIGIN EXTBAR');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>TrigPulse</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function TrigPulse(obj, SetValue)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+% Get interface
+interface = get(obj,'interface');
+
+trcase = SetValue{1};
+time = SetValue{2};
+
+% Trigger signal
+switch trcase
+    case 1
+        fprintf(interface, 'TRIGIN SGL');
+    case 2
+        fprintf(interface, 'TRIGIN EXTBAR');
+        fprintf(interface, 'USE 100');
+        freq = roundn(9.765625/time,-3); 
+        FreqString = ['FREQ ' num2str(freq) ',' num2str(freq)];
+        fprintf(interface, FreqString);
+        fprintf(interface, 'TRIGIN SGL');
+        fprintf(interface, 'USE 0');
+    case 3
+        fprintf(interface, 'TRIGIN SGL');
+    otherwise
+        error('Something´s going wrong.');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

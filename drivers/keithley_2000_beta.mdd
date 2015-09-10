@@ -1,0 +1,1003 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\matlab-programs\jonathan\drivers\keithley_2000.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Digital Multimeter</InstrumentType>
+   <InstrumentManufacturer>Keithley</InstrumentManufacturer>
+   <InstrumentModel>2000</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>*IDN?</Identify>
+   <Reset>*RST</Reset>
+   <Selftest>*TST?</Selftest>
+   <Error>:SYSTEM:error?</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+
+obj.UserData.IntegrationStarted=0; %internal singifier, that the integration cycle has been started by invoking 'integration_start'
+obj.UserData.nsamples=NaN; % number of samples per aquisition-cycle: if &gt; 1 use instruments internal buffer, trigger several times and then retrieve data (this is much faster for many datapoints)
+obj.UserData.Cache.plainMode=NaN;
+obj.UserData.Cache.plainModeTic=NaN;
+obj.UserData.SampleCount=0;
+obj.UserData.UsingBuffer=0; %was 1
+obj.UserData.BufferEngaged=0;</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.Interface.Timeout=0.5;
+fprintf(obj.Interface,'*RST;*CLS;:SYST:PRES;:FORMAT:DATA ASC'); %reset, clear, set data format to IEEE754 double precision (this is 20% faster to FETC? than ascii)
+obj.mode='VDC';
+obj.autorange=0;
+obj.autozero=0;
+invoke(obj.Trigger,'default')
+obj.filter_count=1;
+obj.filter_enable=0;
+obj.nplc=1;
+</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>MCode</Type>
+      <Code>function cleanup(obj)
+% This function is called before the object is disconnected.
+% OBJ is the device object.
+
+obj.range=10;
+obj.Trigger.source='immediate';
+obj.Trigger.init_continuous=1;
+obj.text=NaN;
+obj.nplc=1;
+% End of function definition - DO NOT EDIT
+</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>autorange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:RANGe:AUTO?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:RANGe:AUTO %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>1.0</Value>
+                     <Value>0.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>autozero</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:SYST:AZER:STATE </ConfigureCommand>
+                     <QueryCommand>:SYST:AZER:STATE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>This command is used to disable or enable autozero. When enabled, accuracy
+is optimized. When disabled, speed is increased at the expense of
+accuracy.
+Important Note: Before you can enable or disable auto-zero, the Model
+2000 must first be in the idle state. The Model 2000 can be placed in the
+idle state by first disabling continuous initiation (:INITiate:CONTinuous
+OFF), and then sending the :ABORt command. After sending the :STATe
+command, readings can be re-started by sending :INITiate:CONTinuous
+ON or :INITiate.</Description>
+            </Property>
+            <Property>
+               <Name>calibration_date</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>:CAL:PROT:DATE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>calibration_due</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>CAL:PROT:NDUE?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>filter_count</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:AVER:COUN?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:AVER:COUN %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>These commands are used to specify the filter count. In general, the filter
+count is the number of readings that are acquired and stored in the filter
+buffer for the averaging calculation. The larger the filter count, the more
+filtering that is performed.</Description>
+            </Property>
+            <Property>
+               <Name>filter_enable</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=str2num(query(g,sprintf(':%s:AVER:STAT?',m)));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'FREQ'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:AVER:STAT %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>integration_done</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% check if instrument in in 'idle' state
+
+if(strcmp(obj.operation_condition,'idle'))
+    propertyValue = 1;
+else
+    propertyValue = 0;
+end
+
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>check if operation is complete, i.e. integration is done
+
+if value if '1', then the integration is done and data is available
+
+this property exists mostly due to generalization.</Description>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:FUNC </ConfigureCommand>
+                     <QueryCommand>:FUNC?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="VDC" Value="&#34;VOLT:DC&#34;"/>
+                     <Enum Name="VAC" Value="&#34;VOLT:AC&#34;"/>
+                     <Enum Name="ADC" Value="&#34;CURR:DC&#34;"/>
+                     <Enum Name="AAC" Value="&#34;CURR:AC&#34;"/>
+                     <Enum Name="R" Value="&#34;RES&#34;"/>
+                     <Enum Name="R4t" Value="&#34;FRES&#34;"/>
+                     <Enum Name="TEMP" Value="&#34;TEMP&#34;"/>
+                     <Enum Name="FREQ" Value="&#34;FREQ&#34;"/>
+                     <Enum Name="PERIOD" Value="&#34;PER&#34;"/>
+                     <Enum Name="DIODE" Value="&#34;DIOD&#34;"/>
+                     <Enum Name="CONT" Value="&#34;CONT&#34;"/>
+                     <Enum Name="VDC" Value=""/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>VDC</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>mode as in: "what does it measure"</Description>
+            </Property>
+            <Property>
+               <Name>nplc</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+
+propertyValue=query(g,sprintf(':%s:NPLC?',obj.plainMode));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+
+fprintf(obj.Interface,sprintf(':%s:NPLC %f;*WAI',obj.plainMode,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="10.0" Min="0.01"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.01</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>integration-time in number of power line-cycles</Description>
+            </Property>
+            <Property>
+               <Name>operation_condition</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>:STAT:OPER:COND?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="idle" Value="1024"/>
+                     <Enum Name="waiting for trigger" Value="32"/>
+                     <Enum Name="measuring" Value="16"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>idle</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>plainMode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% get mode in nomenclature of instrument rather than the generalized
+% notation
+
+if ~isnan(obj.UserData.Cache.plainModeTic) &amp;&amp; toc(obj.UserData.Cache.plainModeTic) &lt; 0.3 %keep cache for 300ms
+    propertyValue=obj.UserData.Cache.plainMode;
+else
+    g=obj.Interface;
+    m=query(g,':FUNC?');
+    propertyValue=m(2:end-2); %remove quotation marks
+    if strcmp(m,'\n')
+        propertyValue=obj.UserData.Cache.plainMode;
+        warning(':FUNC? returned NIL. using cached plainMode');
+    else
+        obj.UserData.Cache.plainMode=propertyValue;
+        obj.UserData.Cache.plainModeTic=tic;
+    end
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% readonly
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>mode as known to the instument interaly (read-only)</Description>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:RANGe?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:RANGe %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>1</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>range of the instrument</Description>
+            </Property>
+            <Property>
+               <Name>text</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface
+t=query(g,':DISP:TEXT:STAT?');
+if t==0
+    propertyValue=NaN;
+else
+    t=query(g,':DISP:TEXT:DATA?');
+    propertyValue=t(2:end-2); %remove " ... "
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+
+if numel(propertyValue) &gt; 12
+    propertyValue=propertyValue(1:12);
+end
+
+if isnan(propertyValue)
+    fprintf(g,':DISP:TEXT:STATe 0');
+else
+    fprintf(g,sprintf(':DISP:TEXT:STATe 1; :DISP:TEXT:DATA "%s"',propertyValue));
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function result=getX(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+
+if obj.UserData.BufferEngaged==0
+    if ~obj.UserData.IntegrationStarted %internal singifier, that the integration cycle has been started by invoking 'integration_start'
+        %see wich state we are in:
+        state=obj.operation_condition;
+        switch state
+            case 'idle'
+                invoke(obj,'integration_start');
+            case 'waiting for trigger'
+                fprintf(obj.Interface,'*TRG');
+        end %if the instrument is already measuring, there is nothing else to do than to wait
+    end
+
+    while ~obj.integration_done
+        %do nothing, just wait and see ;)
+        pause(0.005);
+    end    
+    
+    % for :FORMAT:DATA ASC 
+    result=sscanf(query(obj.Interface,'FETC?'),'%e');
+
+    % for :FORMAT:DATA DREAl  double precision binary
+    %fprintf(obj.Interface,'FETC?');
+    %fread(obj.Interface,2); %skip header: first 2 bytes
+    %[result,COUNT,MSG]=fread(obj.Interface,8,'double'); %read data
+    %flushinput(obj.Interface); %empty buffer
+
+    if result==9.9E37 %this means overflow
+        result=NaN;
+    end
+else
+  result=invoke(obj.Buffer,'fetch');
+end
+
+obj.UserData.SampleCount=0;
+obj.UserData.IntegrationStarted=0; %internal singifier, that the integration cycle is done.</MCode>
+               </Code>
+               <Description>use as follows:
+
+invoke(obj,'integration_start');
+while(~obj.ingetration_done)
+	%do whatever you so desire in the meantime
+end
+reading=invoke(obj,'getX'); %finally read data</Description>
+            </Method>
+            <Method>
+               <Name>getXY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function r=getXY(obj)
+%this function exists to provide better interchangebility between LockIn
+%and DC-Measurements. As we are only reading DC there is no imaginary part
+%and we can just return 'getX'
+r=invoke(obj,'getX');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>integration_start</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function integration_start(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+
+if  obj.UserData.UsingBuffer==1 &amp;&amp; obj.UserData.SampleCount == 0
+    obj.Buffer.status=1;
+    invoke(obj.Buffer,'engage');
+end
+
+if strcmp(obj.Trigger.source,'external')
+        %fprintf(obj.Interface,'trac:cle');
+        %fprintf(obj.Interface,'trac:feed:cont next'); % clear data and set feed to 'next' again
+        if ~obj.Trigger.init_continuous==1
+           fprintf(obj.Interface,'*WAI;:INIT');
+        end
+    else
+        if obj.Trigger.init_continuous==1
+            fprintf(obj.Interface,'*WAI;*TRG');
+        else
+            fprintf(obj.Interface,'*WAI;:INIT;*TRG');
+        end
+    end
+    obj.UserData.IntegrationStarted=1;%internal singifier, that the integration cycle has been invoked by this method.
+    obj.UserData.SampleCount=obj.UserData.SampleCount+1;
+    if obj.UserData.SampleCount &gt; obj.Buffer.count
+        warning('maximum of %f samples reached',obj.nsamples');
+    end
+</MCode>
+               </Code>
+               <Description>signify the start of an integration. (i.e. data aquisition, once the integration is done the property integration_done will be '1')
+
+this essentially triggers the instrument. It also relies on trigger_continuos to be '1'.
+
+
+This functionality has been added to enhance portablility between different instruments (Lock-In amplifiers and multimeters, for interchangable ac and dc measurements)</Description>
+            </Method>
+         </MethodInfo>
+      </Group>
+      <Group>
+         <Name>buffer</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="buffer" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>count</Name>
+               <Location>buffer</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRACe:POINts </ConfigureCommand>
+                     <QueryCommand>:TRACe:POINts?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="1024.0" Min="2.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>2.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>source</Name>
+               <Location>buffer</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRACe:FEED</ConfigureCommand>
+                     <QueryCommand>:TRACe:FEED?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="raw" Value="SENSe1"/>
+                     <Enum Name="calc" Value="CALCulate1"/>
+                     <Enum Name="none" Value="NONE"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>raw</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>status</Name>
+               <Location>buffer</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+r=query(obj.Parent.Interface,':TRACe:FEED:CONTrol?');
+if strcmp(r(1:4),'NEXT')
+    propertyValue=1;
+else
+    propertyValue=0;
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+if propertyValue==1
+    %fprintf(obj.Parent.Interface,':TRACe:FEED:CONTrol NEXT'); this is
+    %taken over by the engage-command
+    invoke(obj,'engage');
+    obj.Parent.UserData.UsingBuffer=1;
+else
+    fprintf(obj.Parent.Interface,':TRACe:FEED:CONTrol NEVer');
+    invoke(obj,'clear');
+    obj.Parent.UserData.UsingBuffer=0;    
+end
+    </SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>1.0</Value>
+                     <Value>0.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>clear</Name>
+               <Location>buffer</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command=":TRACe:CLEar" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>engage</Name>
+               <Location>buffer</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function engage(obj,nsamples)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+invoke(obj,'clear');
+%obj.Parent.Trigger.init_continuous=1;
+invoke(obj.Parent.Trigger,'init');
+if nargin &gt; 1
+    obj.count=nsamples;
+end
+obj.source='raw';
+%obj.status=1; instead of this we call engage for obj.set.status==1,
+%therefore we have to call the next one "by hand" to avoid infinite recursion
+fprintf(obj.Parent.Interface,':TRACe:FEED:CONTrol NEXT');
+fprintf(obj.Parent.Interface,'stat:meas:enab 512;*SRE 1;'); %enable SRQ on BFL
+
+obj.Parent.UserData.BufferEngaged=1;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>fetch</Name>
+               <Location>buffer</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function result=fetch(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+
+I=obj.Parent.Interface;
+%wait for SRQ , BFL @ MSB (bits set by engage-method)
+stb=0;
+a=tic;
+while bitand(stb,1)==0
+    [~,stb]=spoll(I);
+    pause(0.001);
+    if toc(a) &gt; 10
+        error('Timed out while waiting for full buffer');
+    end
+end
+fprintf(I,'*CLS'); % clear status byte
+
+
+
+
+
+    fprintf(I,':format:data dreal');
+    nvalues=obj.count;   
+    % adjust input buffer size of VISA object = interface
+    esize = 16;
+    fclose(I);
+    oldInpBSize = get(I,'InputBufferSize');
+    set(I,'InputBufferSize',nvalues*esize);
+    fopen(I);
+
+    fprintf(I,'*WAI;trac:data?');
+
+
+    fread(I,2); %skip header: first 2 bytes
+    [result,COUNT,MSG]=fread(I,nvalues,'double'); %read data
+    
+    flushinput(I); %empty software-buffer
+    clrdevice(I);  %empty hardware-buffer
+    
+    % configure old InputBufferSize
+    fclose(I);
+    set(I,'InputBufferSize',oldInpBSize);
+    fopen(I);
+    fprintf(I,':format:data asc');
+    fprintf(I,'trac:cle'); % clear data and set feed to 'next' again
+    fprintf(I,'trac:feed:cont next');
+    
+    obj.Parent.UserData.BufferEngaged=0;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+      <Group>
+         <Name>trigger</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="trigger" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>count</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:COUN </ConfigureCommand>
+                     <QueryCommand>:TRIG:COUN?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="9999.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>delay</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:DEL </ConfigureCommand>
+                     <QueryCommand>:TRIG:DEL?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="999999.999" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>init_continuous</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:INITiate:CONTinuous </ConfigureCommand>
+                     <QueryCommand>:INITiate:CONTinuous?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sample_count</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:SAMPLE:COUNT </ConfigureCommand>
+                     <QueryCommand>:SAMPLE:COUNT?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>source</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:SOUR </ConfigureCommand>
+                     <QueryCommand>:TRIG:SOUR?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="immediate" Value="IMM"/>
+                     <Enum Name="timer" Value="TIM"/>
+                     <Enum Name="manual" Value="MAN"/>
+                     <Enum Name="bus" Value="BUS"/>
+                     <Enum Name="external" Value="EXT"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>immediate</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>timer</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIG:TIM </ConfigureCommand>
+                     <QueryCommand>:TRIG:TIM?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="999999.999" Min="0.001"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="min" Value="min"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.001</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>default</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function default(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+obj.source='bus';
+obj.delay=0;
+obj.timer='min';
+obj.count=1;
+obj.init_continuous=0;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>init</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command=":init" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

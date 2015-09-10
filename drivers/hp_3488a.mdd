@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Users\jonathan.becker\Dropbox\wsi-backup\transport\software\jb-suite\drivers\hp_3488a.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Switch</InstrumentType>
+   <InstrumentManufacturer>HP</InstrumentManufacturer>
+   <InstrumentModel>3488A</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>ID?</Identify>
+   <Reset>RESET</Reset>
+   <Selftest>TEST</Selftest>
+   <Error>ERROR</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.UserData.display_enabled=1;
+obj.UserData.key_lockout=0;
+obj.UserData.M=zeros(8,8);</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.display_enabled=0; %turn display off, this alows the unit to operate faster ... (as stated in the manual)
+</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>display_enabled</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=obj.UserData.display_enabled;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if propertyValue
+    obj.UserData.display_enabled=1;
+    fprintf(obj.Interface,'DON');
+else
+    obj.UserData.display_enabled=0;
+    fprintf(obj.Interface,'DOFF');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>off</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>key_lockout</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=obj.UserData.key_lock;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if propertyValue
+    obj.UserData.key_lock=1;
+    fprintf(obj.Interface,'LOCK 1');
+else
+    obj.UserData.key_lock=0;
+    fprintf(obj.Interface,'LOCK 0');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>1.0</Value>
+                     <Value>0.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>setMatrix</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function setMatrix(obj,M)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+%split matrix into pieces for each card
+m(:,:,1)= M(1:4,1:4);
+m(:,:,2)= M(1:4,5:8);
+m(:,:,3)= M(5:8,1:4);
+m(:,:,4)= M(5:8,5:8);
+
+
+    CloseCommand='CLOSE ';
+    OpenCommand='OPEN ';
+    for n=1:4
+        [row,col]=find(m(:,:,n)==1);
+        interleaved=reshape([row(:) col(:)]',2*size(row,1), []);
+        if numel(interleaved) &gt; 0
+            CloseCommand=strcat(CloseCommand,sprintf(strcat(',',num2str(n),'%d%d'),interleaved-1));
+        end
+        [row,col]=find(m(:,:,n)==0);
+        interleaved=reshape([row(:) col(:)]',2*size(row,1), []);
+        if numel(interleaved) &gt; 0
+            OpenCommand=strcat(OpenCommand,sprintf(strcat(',',num2str(n),'%d%d'),interleaved-1));
+        end
+    end
+    CloseCommand(6)=' '; % remove 1st comma .... yeah, not the most elegant way. But hey: it does the job pretty efficient ;)
+    OpenCommand(5)=' ';
+    
+    interface = get(obj ,'interface');
+    
+    if numel(CloseCommand) &lt; 7 &amp;&amp; numel(OpenCommand) &gt; 7
+        fprintf(interface,OpenCommand);
+    elseif numel(CloseCommand) &gt; 7 &amp;&amp; numel(OpenCommand) &lt; 7
+        fprintf(interface,CloseCommand);        
+    elseif numel(CloseCommand) &gt; 7 &amp;&amp; numel(OpenCommand) &gt; 7
+        fprintf(interface, sprintf('%s;%s',OpenCommand,CloseCommand));
+    end
+
+
+obj.UserData.M=M;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

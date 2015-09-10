@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>X:\Transport\Documentation-LabN101\Software\MATLAB\jb-suite\drivers\srs_570.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Current Preamplifier</InstrumentType>
+   <InstrumentManufacturer>SRS</InstrumentManufacturer>
+   <InstrumentModel>570</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify/>
+   <Reset>*RST</Reset>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.UserData.blank=NaN;
+obj.UserData.gain=NaN;</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>blank</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% the instrument does not give any answers, so we have to cache everything
+propertyValue=obj.UserData.blank;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+obj.UserData.blank=propertyValue;
+fprintf(obj.Interface,sprintf('BLNK %1.0f',obj.UserData.blank));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>gain</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% the instrument does not give any answers, so we have to cache everything
+propertyValue=obj.UserData.gain;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+range=[1E-12 2E-12 5E-12 10E-12 20E-12 50E-12 100E-12 200E-12 500E-12 1E-9 2E-9 5E-9 10E-9 20E-9 50E-9 100E-9 200E-9 500E-9 1E-6 2E-6 5E-6 10E-6 20E-6 50E-6 100E-6 200E-6 500E-6 1E-3 2E-3 5E-3];
+rangeID=0:29;
+%find nearest
+ind=find(range &gt;= abs(propertyValue),1);
+obj.UserData.gain=range(ind);
+
+fprintf(obj.Interface,sprintf('SENS %1.0f',rangeID(ind)));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo/>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

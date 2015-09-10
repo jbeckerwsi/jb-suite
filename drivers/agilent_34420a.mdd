@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\matlab-programs\jonathan\drivers\keithley_2000.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>DC Volt Meter</InstrumentType>
+   <InstrumentManufacturer>Agilent</InstrumentManufacturer>
+   <InstrumentModel>34420a</InstrumentModel>
+   <InstrumentVersion>1.1</InstrumentVersion>
+   <Identify>*IDN?</Identify>
+   <Reset>*RST</Reset>
+   <Selftest>*TST?</Selftest>
+   <Error>:SYSTEM:error?</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+
+obj.UserData.IntegrationStarted=0; %internal singifier, that the integration cycle has been started by invoking 'integration_start'
+obj.UserData.IntegrationUntil=Inf;</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+fprintf(obj.Interface,'*RST;*CLS;');
+obj.trigger_source='bus';
+obj.mode='VDC';
+obj.autozero='ON';
+obj.autorange=0;
+obj.nplc=10;</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>MCode</Type>
+      <Code>function cleanup(obj)
+% This function is called before the object is disconnected.
+% OBJ is the device object.
+
+
+obj.text=NaN;
+obj.nplc=10;
+% End of function definition - DO NOT EDIT
+</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>autorange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:RANGe:AUTO?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:RANGe:AUTO %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>1.0</Value>
+                     <Value>0.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>autozero</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SENSE:NULL </ConfigureCommand>
+                     <QueryCommand>SENSE:NULL?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="once" Value="ONCE"/>
+                     <Enum Name="off" Value="OFF"/>
+                     <Enum Name="on" Value="ON"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>once</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>filter_count</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SAMPLE:COUNt </ConfigureCommand>
+                     <QueryCommand>SAMPLE:COUNt?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>These commands are used to specify the filter count. In general, the filter
+count is the number of readings that are acquired and stored in the filter
+buffer for the averaging calculation. The larger the filter count, the more
+filtering that is performed.</Description>
+            </Property>
+            <Property>
+               <Name>integration_done</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+%check wether the integration-timer started by 'integration_start' has run out.
+
+t=now;
+
+if obj.UserData.IntegrationStarted==0 || obj.UserData.IntegrationUntil &lt; t
+    propertyValue=1;
+else
+    propertyValue=0;
+end
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>check if operation is complete, i.e. integration is done
+
+if value if '1', then the integration is done and data is available
+
+this property exists mostly due to generalization.</Description>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:FUNC </ConfigureCommand>
+                     <QueryCommand>:FUNC?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="VDC" Value="&#34;VOLT&#34;"/>
+                     <Enum Name="R" Value="&#34;RES&#34;"/>
+                     <Enum Name="R4t" Value="&#34;FRES&#34;"/>
+                     <Enum Name="TEMP" Value="&#34;TEMP&#34;"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>VDC</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>mode as in: "what does it measure"</Description>
+            </Property>
+            <Property>
+               <Name>nplc</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+
+propertyValue=query(g,sprintf(':%s:NPLC?',obj.plainMode));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+
+fprintf(obj.Interface,sprintf(':%s:NPLC %f',obj.plainMode,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.02</Value>
+                     <Value>0.2</Value>
+                     <Value>1.0</Value>
+                     <Value>2.0</Value>
+                     <Value>10.0</Value>
+                     <Value>20.0</Value>
+                     <Value>100.0</Value>
+                     <Value>200.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>10</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>integration-time in number of power line-cycles
+
+The number of available digits depends on this setting!
+
+nplc	#digits,digital filter off	#digits,dig. filter on
+0.02	4.5	5.5
+0.2	5.5	6.5
+1	6.5	7.5
+2	6.5	7.5
+&gt;=20	7.5	7.5</Description>
+            </Property>
+            <Property>
+               <Name>plainMode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% get mode in nomenclature of instrument rather than the generalized
+% notation
+g=obj.Interface;
+m=query(g,':FUNC?');
+propertyValue=m(2:end-2); %remove quotation marks</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% readonly
+</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description>mode as known to the instument interaly (read-only)</Description>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        propertyValue=NaN;
+        return
+    end
+end
+
+propertyValue=query(g,sprintf(':%s:RANGe?',m));</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+m=obj.plainMode;
+
+%these functions know no range
+noRange={'TEMP','FREQ','PRE','DIODE'};
+for i=1:numel(noRange)
+    if strcmp(m,noRange(i))
+        return
+    end
+end
+
+fprintf(obj.Interface,sprintf(':%s:RANGe %f',m,propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>1</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description>range of the instrument</Description>
+            </Property>
+            <Property>
+               <Name>text</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+g=obj.Interface
+t=query(g,':DISP:TEXT:DATA?');
+propertyValue=t(2:end-2); %remove " ... "
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+g=obj.Interface;
+
+if numel(propertyValue) &gt; 12
+    propertyValue=propertyValue(1:12);
+end
+
+if isnan(propertyValue)
+    fprintf(g,':DISP:TEXT:CLEar');
+else
+    fprintf(g,sprintf(':DISP:TEXT:DATA "%s"',propertyValue));
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>trigger_source</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>trig:sour </ConfigureCommand>
+                     <QueryCommand>trig:sour?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="bus" Value="bus"/>
+                     <Enum Name="immediate" Value="imm"/>
+                     <Enum Name="external" Value="ext"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>bus</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function result=getX(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+if ~obj.UserData.IntegrationStarted %internal singifier, that the integration cycle has been started by invoking 'integration_start'
+    %if integration hasnt started yet, do so:
+    invoke(obj,'integration_start');
+end
+
+while ~obj.integration_done
+    pause(0.01);
+    %do nothing, just wait and see ;)
+end
+fprintf(obj.Interface,'fetc?');
+result=fscanf(obj.Interface,'%e');
+if result==9.9E37 %this means overflow
+    result=NaN;
+end
+
+obj.UserData.IntegrationStarted=0; %internal singifier, that the integration cycle is done.</MCode>
+               </Code>
+               <Description>use as follows:
+
+invoke(obj,'integration_start');
+while(~obj.ingetration_done)
+	%do whatever you so desire in the meantime
+end
+reading=invoke(obj,'getX'); %finally read data</Description>
+            </Method>
+            <Method>
+               <Name>getXY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function r=getXY(obj)
+%this function exists to provide better interchangebility between LockIn
+%and DC-Measurements. As we are only reading DC there is no imaginary part
+%and we can just return 'getX'
+r=invoke(obj,'getX');</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>integration_start</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function integration_start(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+
+
+%the 34420a trigger system unfortunately does not suppoert querying of the
+%current statur (i.e. idle or waiting for trigger ..) so we just have to
+%make do with the READ?-command and wait for the instrument to answer to
+%ensure we have a new reading. (FETC? could return the same value multiple
+%times). 
+% In order to still execute other code while taking a reading the send and
+% the reciving of the READ? -command are split into two functions.
+% integration_start sends the read command and sets atimer value, for when
+% the reading should be available, then the data is read by getX
+
+%!!!!!!!!!!!!one drawback of this solution is, that nothing alse must be queried
+%inbetween integration_start and getX!!!!!!!!!
+
+%!!!^^^^^^this comment might be obsolete (see comment below concerning READ?)
+
+nplc=obj.nplc; %have to read this before, in order no to interfer with the result of 'READ?';
+
+%fprintf(obj.Interface,'READ?');  %this used to work, however the instrument decided not to like it anymore ... whatever!
+fprintf(obj.Interface,':init;*trg');
+
+obj.UserData.IntegrationStarted=1;%internal singifier, that the integration cycle has been invoked by this method.
+
+a=now;
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+plc=1/50; % duration of 1 power line cycle in seconds, as we are in Europe, this is 1/50th
+
+obj.UserData.IntegrationUntil = a +  s*plc*nplc;</MCode>
+               </Code>
+               <Description>signify the start of an integration. (i.e. data aquisition, once the integration is done the property integration_done will be '1')
+
+this essentially triggers the instrument. It also relies on trigger_continuos to be '1'.
+
+
+This functionality has been added to enhance portablility between different instruments (Lock-In amplifiers and multimeters, for interchangable ac and dc measurements)</Description>
+            </Method>
+         </MethodInfo>
+      </Group>
+      <Group>
+         <Name>channel</Name>
+         <Description/>
+         <Command/>
+         <Size>2</Size>
+         <Mappings>
+            <ChannelMap Command="2" Index="2"/>
+            <ChannelMap Command="1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>autozero</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SENSe&lt;ID&gt;:VOLTage:NULL </ConfigureCommand>
+                     <QueryCommand>SENSe&lt;ID&gt;:VOLTage:NULL?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="on" Value="ON"/>
+                     <Enum Name="off" Value="OFF"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>on</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>nplc</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SENSe&lt;ID&gt;:VOLTage:NPLC </ConfigureCommand>
+                     <QueryCommand>SENSe&lt;ID&gt;:VOLTage:NPLC?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.02</Value>
+                     <Value>0.2</Value>
+                     <Value>1.0</Value>
+                     <Value>2.0</Value>
+                     <Value>10.0</Value>
+                     <Value>20.0</Value>
+                     <Value>100.0</Value>
+                     <Value>200.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="min" Value="MIN"/>
+                     <Enum Name="max" Value="MAX"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.02</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SENSe&lt;ID&gt;:VOLTage:RANGe </ConfigureCommand>
+                     <QueryCommand>SENSe&lt;ID&gt;:VOLTage:RANGe?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>resolution</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SENSe&lt;ID&gt;:VOLTage:RESolution </ConfigureCommand>
+                     <QueryCommand>SENSe&lt;ID&gt;:VOLTage:RESolution?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="max" Value="MAX"/>
+                     <Enum Name="min" Value="MIN"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>getX</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="ROUTe:TERMinals FRONt&lt;ID&gt;" Output="false"/>
+                     <Line Command=":init;*trg;fetc?" Format="numeric" Output="true" ReadOutputAs="ASCII"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>select</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="ROUTe:TERMinals FRONt&lt;ID&gt;" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>
