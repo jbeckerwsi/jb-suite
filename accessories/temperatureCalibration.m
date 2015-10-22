@@ -168,9 +168,16 @@ classdef temperatureCalibration < handle
                 end
             end
         end
+<<<<<<< HEAD
     end
     methods(Static)
         function T=dt670(voltage,reverse)
+=======
+        
+    end
+    methods(Static)
+        function T=dt670(obj,voltage,reverse)
+>>>>>>> origin/master
             if nargin < 3
                 reverse=0;
             end
