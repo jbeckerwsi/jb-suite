@@ -437,7 +437,7 @@ g=obj.Interface;
 m=obj.plainMode;
 
 %these functions know no range
-noRange={'TEMP','FREQ','PRE','DIODE'};
+noRange={'TEMP','FREQ','PRE'};
 for i=1:numel(noRange)
     if strcmp(m,noRange(i))
         propertyValue=NaN;
@@ -445,20 +445,28 @@ for i=1:numel(noRange)
     end
 end
 
-propertyValue=query(g,sprintf(':%s:RANGe?',m));</GetMCode>
+if strcmp(m,'DIOD')
+    propertyValue=query(g,':DIODe:CURRent:RANGe?');
+else
+    propertyValue=query(g,sprintf(':%s:RANGe?',m));
+end</GetMCode>
                   <SetMCode>function set(obj, propertyName, propertyValue)
 g=obj.Interface;
 m=obj.plainMode;
 
 %these functions know no range
-noRange={'TEMP','FREQ','PRE','DIODE'};
+noRange={'TEMP','FREQ','PRE'};
 for i=1:numel(noRange)
     if strcmp(m,noRange(i))
         return
     end
 end
 
-fprintf(obj.Interface,sprintf(':%s:RANGe %f',m,propertyValue));</SetMCode>
+if strcmp(m,'DIOD')
+    fprintf(obj.Interface,sprintf(':DIODe:CURRent:RANGe %f',propertyValue));
+else
+    fprintf(obj.Interface,sprintf(':%s:RANGe %f',m,propertyValue));
+end</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>
