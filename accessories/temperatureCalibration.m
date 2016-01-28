@@ -171,10 +171,10 @@ classdef temperatureCalibration < handle
                 end
             end
         end
-        
     end
     methods(Static)
         function T=dt670(voltage,reverse)
+
             if nargin < 3
                 reverse=0;
             end
