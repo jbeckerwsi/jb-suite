@@ -20,7 +20,7 @@ classdef temperatureCalibration < handle
     
     methods
         function obj=temperatureCalibration(type)
-            if ~any(strcmp(type,{'Ni','DT670'}))
+            if ~any(strcmp(type,{'Ni','DT670','PT100'}))
                 error('unsupported sensor type. exiting.');
             end
             switch(type)
@@ -82,7 +82,8 @@ classdef temperatureCalibration < handle
                         end
                         T=obj.calibrationData.T(SensorReading);
                     end
-
+                case 'PT100'
+                    T=obj.pt100(SensorReading);
             end
         end
         
@@ -99,6 +100,8 @@ classdef temperatureCalibration < handle
                         end
                         Reading=obj.calibrationData.R(Temperature);
                     end
+                case 'PT100'
+                    Reading=obj.pt100(Temperature,1);
             end
         end
         
@@ -171,7 +174,7 @@ classdef temperatureCalibration < handle
         
     end
     methods(Static)
-        function T=dt670(obj,voltage,reverse)
+        function T=dt670(voltage,reverse)
             if nargin < 3
                 reverse=0;
             end
@@ -371,5 +374,58 @@ classdef temperatureCalibration < handle
                 T=interp1(DT600StandardCurveInterpolationTable(:,2),DT600StandardCurveInterpolationTable(:,1),voltage);
             end
         end
+        
+        function T=pt100(resistance,reverse)
+            if nargin < 2
+                reverse=0;
+            end
+            
+            %source:
+            %grundpraktikum.physik.uni-saarland.de/scripts/Platin_Widerstandsthermometer.pdf
+            % 28.01.2016
+            A=3.9083E-3;
+            B=-5.775E-7;
+            C=-4.183E-12;
+            
+            R0=100;
+            if reverse == 1
+                %calculate resistance from temperature
+                T=resistance;
+                R=[];
+                for i=1:numel(T)
+                    
+                    if T(i) > 73.15 && T(i) <= 273.15
+                        Tc=T(i)-273.15; %convert to celsius
+                        R(i)=R0*(1+A*Tc+B*Tc^2+C*(Tc-100)*Tc^3);
+                    elseif( T(i) > 273.15)
+                        Tc=T(i)-273.15; %convert to celsius
+                        R(i)=R0*(1+A*Tc+B*Tc^2);
+                    else
+                        error('T=%f out of range for PT100 calibration',T(i));
+                    end
+                    
+                end
+                T=R;
+            else
+                R=resistance;
+                %needed to interpolate for R<R0
+                Tt=73.15:0.1:273.15;
+                Tct=Tt-273.15; %convert to celsius
+                Rt=R0*(1+A.*Tct+B.*Tct.^2+C.*(Tct-100).*Tct.^3);
+                
+                T=NaN(numel(R),1);
+                for i=1:numel(R)
+                    
+                    if R(i) > R0 %T > 0°C
+                        Tc=(-A*R0+sqrt((A*R0)^2-4*B*R0*(R0-R(i))))/(2*B*R0);
+                        T(i)=Tc+273.15;
+                    else
+                        %this is not trivial, so we take the easy, numeric way out ;)
+                        
+                        T(i)=interp1(Rt,Tt,R(i),'pchip');
+                    end
+                end
+            end
+        end  
     end
 end
