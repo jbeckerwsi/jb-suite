@@ -3,9 +3,10 @@ classdef temperatureController < handle
     % using on-chip resistive temperature-sensing ans on-carrier resistive heating 
     
     properties
-        rawSetPoint=0;  % set point in value of resistance meter (ohms, most likely)
+        SetPoint=0;  % set point in Kelvin
         heatingSupply; % Instrument handle of power supply connected to heater, will be used in CC mode (one channel of HP4145b)
-        tempSensor;    % Instrument handle for resistance meter (e.g. HP 34420a)
+        tempMeter;    % Instrument handle for resistance meter (e.g. HP 34420a)
+        tempCalibration; %instance of temperatureCalibration.m
         PID;           % PID parameters (struct: p,i,d)
         maxCurrent=100E-3; %current limit
     end
@@ -13,47 +14,47 @@ classdef temperatureController < handle
     properties (SetAccess='private')
         iteration=0;     % iteration counter
         
-        lastSensorValues; % last (raw) values of temperature sensor
+        lastSensorValues; % last values of temperature sensor
         timestamps;       % according timestamps (usefull for calculating the derivative)
         outputValues;     % record of output values, this is proportional to the output power, since we set out current source to sqrt(value); P=RI^2 <=> I \propto sqrt(P)
         errors;           % difference between SensorValue and SetPoint
-        sensorScaling=1/30E-6;  % scaling factor for sensor-reading
     end
     
     methods
-        function obj=temperatureController(heatingSupply,tempSensor)
+        function obj=temperatureController(heatingSupply,tempMeter,tempCalibration)
             obj.heatingSupply=heatingSupply;
-            obj.tempSensor=tempSensor;
+            obj.tempMeter=tempMeter;
+            obj.tempCalibration=tempCalibration;
             obj.PID.p=0;
             obj.PID.i=0;
             obj.PID.d=0;
             
 
             obj.heatingSupply.mode='CC';        % constant current
-            obj.heatingSupply.Compliance=100;   % voltage limit 100V
+           % obj.heatingSupply.Compliance=100;   % voltage limit 100V
             obj.heatingSupply.range=100E-3;     % 100mA-range
             obj.heatingSupply.value=0;          % start at zero ;) ... often not a bad idea
             
         end
         
-        function rawSensorValue=iter(obj) % perform a control-loop iteration, this is what will be called in the main programm-loop and is aimed to be non-blocking
+        function SensorValue=iter(obj) % perform a control-loop iteration, this is what will be called in the main programm-loop and is aimed to be non-blocking
             % to be non blocking this function is alternating between
             % integration_start and readout/regulation for even&odd
             % iterations
             if mod(obj.iteration,2) ==0
-                invoke(obj.tempSensor,'integration_start');
+                invoke(obj.tempMeter,'integration_start');
                 if obj.iteration == 0
-                    rawSensorValue=NaN;
+                    SensorValue=NaN;
                 else
-                    rawSensorValue=obj.lastSensorValues(end);
+                    SensorValue=obj.lastSensorValues(end);
                 end
                 obj.iteration=obj.iteration+1;
                 return
             end
             
-            obj.lastSensorValues(end+1)=invoke(obj.tempSensor,'getX')*obj.sensorScaling;
+            obj.lastSensorValues(end+1)=obj.tempCalibration.Temperature(invoke(obj.tempMeter,'getX'));
             obj.timestamps(end+1)=now;
-            obj.errors(end+1)=obj.rawSetPoint-obj.lastSensorValues(end);
+            obj.errors(end+1)=obj.SetPoint-obj.lastSensorValues(end);
             
             s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
             time=(obj.timestamps-obj.timestamps(1))./s;
@@ -89,18 +90,18 @@ classdef temperatureController < handle
                 int=PID.i*sum(obj.errors)/numel(obj.errors);
             end
             
-            new_value=obj.heatingSupply.value^2+prop+int+diff;
+            new_value=obj.heatingSupply.value+prop+int+diff;
             if new_value < 0
                 new_value=0; %cant heat, just cool
             end
             
-            if new_value > obj.maxCurrent^2   %current limit
-                new_value = obj.maxCurrent^2;
+            if new_value > obj.maxCurrent   %current limit
+                new_value = obj.maxCurrent;
             end
             obj.outputValues(end+1)=new_value;
-            obj.heatingSupply.value=sqrt(new_value); % as we want to regulate power and not current we have to take P=RI^2 into account
+            obj.heatingSupply.value=new_value; 
             fprintf('%s:d\t o:%d\t e:%d\t p:%d\t i:%d\n',obj.lastSensorValues(end),sqrt(new_value),obj.errors(end),prop,int);
-            rawSensorValue=obj.lastSensorValues(end);
+            SensorValue=obj.lastSensorValues(end);
             
             obj.iteration=obj.iteration+1;
         end
