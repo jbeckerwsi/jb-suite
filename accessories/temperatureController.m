@@ -9,6 +9,7 @@ classdef temperatureController < handle
         tempCalibration; %instance of temperatureCalibration.m
         PID;           % PID parameters (struct: p,i,d)
         maxCurrent=100E-3; %current limit
+        outputScaling=@(x) sqrt(abs(x)/1000); %applied output-scaling, as we are setting the current, but actually want to regulate the power we apply this function (P=RI^2), with R_heat=1kOhm
     end
     
     properties (SetAccess='private')
@@ -90,17 +91,21 @@ classdef temperatureController < handle
                 int=PID.i*sum(obj.errors)/numel(obj.errors);
             end
             
-            new_value=obj.heatingSupply.value+prop+int+diff;
+            if numel(obj.outputValues) > 0
+                new_value=obj.outputValues(end)+prop+int+diff;
+            else
+                new_value=prop+int+diff;
+            end
             if new_value < 0
                 new_value=0; %cant heat, just cool
             end
             
-            if new_value > obj.maxCurrent   %current limit
+            if obj.outputScaling(new_value) > obj.maxCurrent   %current limit
                 new_value = obj.maxCurrent;
             end
             obj.outputValues(end+1)=new_value;
-            obj.heatingSupply.value=new_value; 
-            fprintf('%s:d\t o:%d\t e:%d\t p:%d\t i:%d\n',obj.lastSensorValues(end),sqrt(new_value),obj.errors(end),prop,int);
+            obj.heatingSupply.value=obj.outputScaling(new_value); 
+            fprintf('%s\tsen:%1.3fK\t out:%1.0fmW\t err:%1.0fmK\t p:%1.3d\t i:%1.3d\n',datestr(obj.timestamps(end),'HH:MM:SS'),obj.lastSensorValues(end),new_value*1E3,-obj.errors(end)*1E3,prop,int);
             SensorValue=obj.lastSensorValues(end);
             
             obj.iteration=obj.iteration+1;
@@ -114,6 +119,32 @@ classdef temperatureController < handle
                 lastN=numel(obj.errors);
             end
             e=sum(obj.errors(end-lastN:end));
+        end
+        
+        function d=isStable(obj,maxDeviation,timespan)
+            %check if error is smaller than maxDeviation since timespan
+            %seconds
+            
+            if nargin < 3
+                timespan=60; %default: 60s
+            end
+            if nargin < 2
+                maxDeviation=0.1; %default 100mK;
+            end
+            
+            s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+            minT=now-timespan*s;
+            idx=find(obj.timestamps > minT);
+            if numel(idx) < 10
+                warning('not enough tc data from last %f seconds',timespan);
+                d=0;
+                return
+            end
+            if max(abs(obj.errors(idx))) > maxDeviation
+                d=0;
+            else
+                d=1;
+            end
         end
             
         
