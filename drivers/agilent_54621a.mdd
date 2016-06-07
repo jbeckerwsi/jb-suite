@@ -37,6 +37,181 @@
          <MethodInfo/>
       </Group>
       <Group>
+         <Name>timebase</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="Timebase1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>mode</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:Mode</ConfigureCommand>
+                     <QueryCommand>:TIMebase:Mode?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="main" Value="MAIN"/>
+                     <Enum Name="window" Value="WINDow"/>
+                     <Enum Name="xy" Value="XY"/>
+                     <Enum Name="roll" Value="ROLL"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>main</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>position</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:POSition </ConfigureCommand>
+                     <QueryCommand>:TIMebase:POSition?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:RANGe</ConfigureCommand>
+                     <QueryCommand>:TIMebase:RANGe?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>reference</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:REFerence</ConfigureCommand>
+                     <QueryCommand>:TIMebase:REFerence?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="left" Value="LEFT"/>
+                     <Enum Name="center" Value="CENTer"/>
+                     <Enum Name="right" Value="RIGHt"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>left</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>scale</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:SCALe</ConfigureCommand>
+                     <QueryCommand>:TIMebase:SCALe?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>window_position</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:WINDow:POSition</ConfigureCommand>
+                     <QueryCommand>:TIMebase:WINDow:POSition?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>window_range</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:WINDow:RANGe</ConfigureCommand>
+                     <QueryCommand>:TIMebase:WINDow:RANGe?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>window_scale</Name>
+               <Location>timebase</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TIMebase:WINDow:SCALe</ConfigureCommand>
+                     <QueryCommand>:TIMebase:WINDow:SCALe?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo/>
+      </Group>
+      <Group>
          <Name>trigger</Name>
          <Description/>
          <Command/>
@@ -45,6 +220,54 @@
             <ChannelMap Command="trigger1" Index="1"/>
          </Mappings>
          <PropertyInfo>
+            <Property>
+               <Name>coupling</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIGger:COUPling</ConfigureCommand>
+                     <QueryCommand>:TRIGger:COUPling?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="ac" Value="AC"/>
+                     <Enum Name="dc" Value="DC"/>
+                     <Enum Name="lf_reject" Value="LFR"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>ac</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>reject</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIGger:REJect</ConfigureCommand>
+                     <QueryCommand>:TRIGger:REJect?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="off" Value="OFF"/>
+                     <Enum Name="lf" Value="LFR"/>
+                     <Enum Name="hf" Value="HFR"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>off</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
             <Property>
                <Name>slope</Name>
                <Location>trigger</Location>
@@ -64,7 +287,7 @@
                      <Enum Name="negative" Value="NEG"/>
                   </ConstraintValue>
                </PermissibleType>
-               <DefaultValue/>
+               <DefaultValue>positive</DefaultValue>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
