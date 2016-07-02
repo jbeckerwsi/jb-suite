@@ -326,19 +326,31 @@ end</SetMCode>
                <Name>range_numeric</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
-               <Type>InstrumentCommand</Type>
+               <Type>MCode</Type>
                <Code>
-                  <Commands>
-                     <ConfigureCommand/>
-                     <QueryCommand>SEN.</QueryCommand>
-                  </Commands>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=query(obj.Interface,'SEN.?');</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+g=obj.Interface;
+fprintf(g,sprintf('SEN %E',propertyValue));</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>
-                  <Constraint>none</Constraint>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="27.0" Min="1.0"/>
+                  </ConstraintValue>
                </PermissibleType>
                <DefaultValue>0</DefaultValue>
-               <ReadOnly>always</ReadOnly>
+               <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
             <Property>
@@ -835,6 +847,36 @@ if numel(reading) ==1
 else
     propertyValue = reading(1)+1i*reading(2);
 end
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getY(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'Y.?');
+
+reading = str2double(reading);
+propertyValue=reading;
+
 
 %reset timer
 obj.UserData.IntegrationUntil=Inf;</MCode>
