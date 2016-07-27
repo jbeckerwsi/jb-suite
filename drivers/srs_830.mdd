@@ -1,0 +1,393 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Matlab Programs\jb-suite\drivers\srs_830.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Lock-In Amplifier</InstrumentType>
+   <InstrumentManufacturer>Stanford Research</InstrumentManufacturer>
+   <InstrumentModel>SR830</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>*IDN?</Identify>
+   <Reset>*RST</Reset>
+   <Selftest>*TST?</Selftest>
+   <Error>System:Error?</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>osc_amplitude</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>SLVL</ConfigureCommand>
+                     <QueryCommand>SLVL?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="5.0" Min="0.004"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.004</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>osc_freq</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>FREQ</ConfigureCommand>
+                     <QueryCommand>FREQ?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="102000.0" Min="0.001"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.001</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>range</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+g=obj.Interface;
+n=query(g,'SENS?');
+m=obj.sig_mode;
+switch m
+    case 'I_lowNoise'
+        im='current';
+    case 'I_highBW'
+        im='current';
+    otherwise
+        im='voltage';
+end
+
+names.('current') = {'2fA', '5fA', '10fA', '20fA', '50fA', '100fA', '200fA', '500fA', '1pA',  '2pA',  '5pA',  '10pA',  '20pA',  '50pA',  '100pA', '200pA', '500pA', '1nA', '2nA', '5nA', '10nA', '20nA', '50nA', '100nA', '200nA', '500nA', '1uA'  };
+names.('voltage') = {'2nV', '5nV', '10nV', '20nV', '50nV', '100nV', '200nV', '500nV', '1uV',  '2uV',  '5uV',  '10uV',  '20uV',  '50uV',  '100uV', '200uV', '500uV', '1mV', '2mV', '5mV', '10mV', '20mV', '50mV', '100mV', '200mV', '500mV', '1V'   };
+
+numeric.('current') = [2E-15, 5E-15, 10E-15, 20E-15, 50E-15, 100E-15, 200E-15, 500E-15, 1E-12,  2E-12,  5E-12,  10E-12,  20E-12,  50E-12,  100E-12, 200E-12, 500E-12, 1E-9,   2E-9,   5E-9,   10E-9,   20E-9,   50E-9,   100E-9, 200E-9, 500E-9, 1E-6  ];
+numeric.('voltge')  = [2E-9,  5E-9,  10E-9,  20E-9,  50E-9,  100E-9,  200E-9,  500E-9,  1E-6,   2E-6,   5E-6,   10E-6,   20E-6,   50E-6,   100E-6,  200E-6,  500E-6,  1E-3,   2E-3,   5E-3,   10E-3,   20E-3,   50E-3,   100E-3, 200E-3, 500E-3, 1     ];
+
+
+propertyValue=names.(im){str2num(n)+1};</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% set range, possible inputs are: string with range or numeric (next
+% greater range will be selected)
+
+m=obj.sig_mode;
+switch m
+    case 'I_lowNoise'
+        im='current';
+    case 'I_highBW'
+        im='current';
+    otherwise
+        im='voltage';
+end
+
+names.('current') = {'2fA', '5fA', '10fA', '20fA', '50fA', '100fA', '200fA', '500fA', '1pA',  '2pA',  '5pA',  '10pA',  '20pA',  '50pA',  '100pA', '200pA', '500pA', '1nA', '2nA', '5nA', '10nA', '20nA', '50nA', '100nA', '200nA', '500nA', '1uA'  };
+names.('voltage') = {'2nV', '5nV', '10nV', '20nV', '50nV', '100nV', '200nV', '500nV', '1uV',  '2uV',  '5uV',  '10uV',  '20uV',  '50uV',  '100uV', '200uV', '500uV', '1mV', '2mV', '5mV', '10mV', '20mV', '50mV', '100mV', '200mV', '500mV', '1V'   };
+
+numeric.('current') = [2E-15, 5E-15, 10E-15, 20E-15, 50E-15, 100E-15, 200E-15, 500E-15, 1E-12,  2E-12,  5E-12,  10E-12,  20E-12,  50E-12,  100E-12, 200E-12, 500E-12, 1E-9,   2E-9,   5E-9,   10E-9,   20E-9,   50E-9,   100E-9, 200E-9, 500E-9, 1E-6  ];
+numeric.('voltge')  = [2E-9,  5E-9,  10E-9,  20E-9,  50E-9,  100E-9,  200E-9,  500E-9,  1E-6,   2E-6,   5E-6,   10E-6,   20E-6,   50E-6,   100E-6,  200E-6,  500E-6,  1E-3,   2E-3,   5E-3,   10E-3,   20E-3,   50E-3,   100E-3, 200E-3, 500E-3, 1     ];
+
+
+names  = names.(im);
+numeric= numeric.(im);
+
+if(isnumeric(propertyValue))
+    ind=find(numeric &gt;= abs(propertyValue),1);
+else
+    ind=find(ismember(names,propertyValue));
+end
+
+if not(isempty(ind))
+    g=obj.Interface;
+    fprintf(g,sprintf('SENS %d',ind-1));
+else
+    error('requested invalid range. Possible ranges are: %s, (%d to %d)',sprintf('%s ',names{:}),numeric(1),numeric(end));
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_harmonic</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>HARM</ConfigureCommand>
+                     <QueryCommand>HARM?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="19999.0" Min="1.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_input</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>FMOD</ConfigureCommand>
+                     <QueryCommand>FMOD?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="internal" Value="1"/>
+                     <Enum Name="front (external)" Value="0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>internal</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_phase</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>PHAS</ConfigureCommand>
+                     <QueryCommand>PHAS?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="729.99" Min="-360.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ref_trigger</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>RSLP</ConfigureCommand>
+                     <QueryCommand>RSLP?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="zero crossing" Value="0"/>
+                     <Enum Name="TTL rising" Value="1"/>
+                     <Enum Name="TTL falling" Value="2"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>zero crossing</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_coupling</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>ICPL</ConfigureCommand>
+                     <QueryCommand>ICPL?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="AC" Value="0"/>
+                     <Enum Name="DC" Value="1"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>AC</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_float</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+val=str2num(query(obj.Interface,'IGND?'));
+if val == 0
+    propertyValue=1;
+else
+    propertyValue=0;
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if propertyValue==1
+    fprintf(obj.Interface,'IGND 0');
+else
+    fprintf(obj.Interface,'IGND 1');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_linefilter</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>ILIN</ConfigureCommand>
+                     <QueryCommand>ILIN?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="off" Value="0"/>
+                     <Enum Name="50Hz" Value="1"/>
+                     <Enum Name="100Hz" Value="2"/>
+                     <Enum Name="50Hz+100Hz" Value="3"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>off</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>ISRC</ConfigureCommand>
+                     <QueryCommand>ISRC?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="A" Value="0"/>
+                     <Enum Name="A-B" Value="1"/>
+                     <Enum Name="I_highBW" Value="2"/>
+                     <Enum Name="I_lowNoise" Value="3"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>A</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>timeconstant</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+times=[ 10E-6 30E-6 100E-6 300E-6 1E-3 3E-3 10E-3 30E-3 100E-3 300E-3 1 3 10 30 100 300 1E3 3E3 10E3 30E3];
+
+g=obj.Interface;
+n=query(g,'OFLT?');
+propertyValue=times(str2num(n)+1);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+times=[ 10E-6 30E-6 100E-6 300E-6 1E-3 3E-3 10E-3 30E-3 100E-3 300E-3 1 3 10 30 100 300 1E3 3E3 10E3 30E3];
+[idx idx]=min(abs(times-propertyValue));
+
+g=obj.Interface;
+fprintf(g,sprintf('OFLT %d',idx-1));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo/>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

@@ -349,7 +349,7 @@ fprintf(g,sprintf('SEN %E',propertyValue));</SetMCode>
                      <Range Max="27.0" Min="1.0"/>
                   </ConstraintValue>
                </PermissibleType>
-               <DefaultValue>0</DefaultValue>
+               <DefaultValue>1.0</DefaultValue>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
@@ -668,6 +668,64 @@ If n &gt; 0 then current mode is enabled irrespective of the VMODE setting</Desc
                   </ConstraintValue>
                </PermissibleType>
                <DefaultValue>50Hz</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>sig_mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if strcmp(obj.sig_imode,'off')
+    propertyValue=obj.sig_vmode;
+else
+    switch obj.sig_imode
+        case 'low_noise'
+            propertyValue='I_lowNoise';
+        case 'high_bandwidth'
+            propertyValue='I_highBW';
+    end
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+switch propertyValue
+    case 'I_lowNoise'
+        obj.sig_imode='low_noise';
+    case 'I_highBW'
+        obj.sig_imode='high_bandwidth';
+    case 'A'
+        obj.sig_imode='off';
+        obj.sig_vmode='A';
+    case '-B'
+        obj.sig_imode='off';
+        obj.sig_vmode='-B';
+    case 'A-B'
+        obj.sig_imode='off';
+        obj.sig_vmode='A-B';
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="I_lowNoise" Value="I_lowNoise"/>
+                     <Enum Name="I_highBW" Value="I_highBW"/>
+                     <Enum Name="A" Value="A"/>
+                     <Enum Name="A-B" Value="A-B"/>
+                     <Enum Name="-B" Value="-B"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue/>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
