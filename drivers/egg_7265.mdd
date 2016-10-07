@@ -725,7 +725,7 @@ end</SetMCode>
                      <Enum Name="-B" Value="-B"/>
                   </ConstraintValue>
                </PermissibleType>
-               <DefaultValue/>
+               <DefaultValue>I_lowNoise</DefaultValue>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
@@ -847,6 +847,36 @@ minimize the Y channel output signals.</Description>
                <Description>Perform an Auto-Sensitivity operation
 The instrument adjusts its full-scale sensitivity so that the magnitude output lies
 between 30% and 90% of full-scale.</Description>
+            </Method>
+            <Method>
+               <Name>getosc_amplitude</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getosc_amplitude(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'OA.?');
+
+reading = str2double(reading);
+propertyValue=reading;
+
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
             </Method>
             <Method>
                <Name>getX</Name>

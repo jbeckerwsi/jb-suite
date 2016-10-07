@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Matlab Programs\jb-suite\drivers\oxford_itc4.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>Temperature Controller</InstrumentType>
+   <InstrumentManufacturer>Oxford</InstrumentManufacturer>
+   <InstrumentModel>ITC4</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify/>
+   <Reset/>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.Interface.Terminator='CR';
+obj.UserData.tempsensor=1;</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.remote=1;
+obj.tempsensor=1;</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>MCode</Type>
+      <Code>function cleanup(obj)
+% This function is called before the object is disconnected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.remote=0;</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>remote</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+invoke(obj,'flushInterface');
+
+fprintf(obj.Interface,'X');
+res=fread(obj.Interface,9);
+res=char(res')
+%the answer will be formatted like 'XnAnCnSnn' with n beeing a digit
+%here we are intrested in the "C"-Part
+C=res(6);
+
+%C0 : local &amp; locked
+%C1 : remote &amp; locked
+%C2 : local
+%C3 : remote
+
+%if the intrument is in a locked state we want to unlock it.
+switch C
+    case '0'
+        fprintf(obj.Interface,'$C2');
+        propertyValue=0;
+    case '1'
+        fprintf(obj.Interface,'$C3');
+        propertyValue=1;
+    case '2'
+        propertyValue=0;
+    case '3'
+        propertyValue=1;
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+invoke(obj,'flushInterface');
+
+if propertyValue==1
+    % 1 means switch to remote mode
+    fprintf(obj.Interface,'$C3');
+else
+    fprintf(obj.Interface,'$C2');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>settemp</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+invoke(obj,'flushInterface');
+
+res=query(obj.Interface,'R0');
+%return value will be sth. like R+00012 in case of 1.2K
+propertyValue=str2num(res(3:end))/10;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.#
+invoke(obj,'flushInterface');
+
+obj.remote=1;
+fprintf(obj.Interface,sprintf('$T%05.0f',propertyValue*10));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>tempsensor</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+invoke(obj,'flushInterface');
+
+r=obj.remote;
+
+obj.remote=1;
+propertyValue=obj.UserData.tempsensor;
+
+fprintf(obj.Interface,sprintf('$H%1.0f',obj.UserData.tempsensor));
+
+
+obj.remote=r;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+invoke(obj,'flushInterface');
+
+obj.remote=1;
+fprintf(obj.Interface,sprintf('$H%1.0f',propertyValue));
+obj.UserData.tempsensor=propertyValue;</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>flushInterface</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function flushInterface(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+I=obj.Interface;
+
+    flushinput(I); %empty software-buffer
+   % clrdevice(I);  %empty hardware-buffer</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getT</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function value=getT(obj,n)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+invoke(obj,'flushInterface');
+
+if nargin &lt; 2
+    n=1;
+end
+
+n=floor(n);
+if n &gt; 3
+    n=3;
+end
+if n &lt; 1
+    n=1;
+end
+
+
+fprintf(obj.Interface,sprintf('R%1.0f',n));
+to=obj.Interface.Timeout;
+obj.Interface.Timeout=0.05; %hurry up ...
+res=fread(obj.Interface,8);
+obj.Interface.Timeout=to;
+res=char(res');
+
+value=str2num(res(3:end))/10;
+
+if isempty(value)
+    value=NaN;
+end
+%value=value(1); %seems to be a random hickup every 141 or so samples</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function value=getX(obj,n)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+if nargin &lt; 2
+    n=1;
+end
+value=invoke(obj,'getT',n);</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>

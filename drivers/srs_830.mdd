@@ -16,7 +16,7 @@
 % This function is called after the object is created.
 % OBJ is the device object.
 % End of function definition - DO NOT EDIT
-</Code>
+obj.UserData.IntegrationUntil=Inf; %internal singifier, when the integration cycle started by invoking 'integration_start' is over (compare this value to 'now')</Code>
    </CreateInitCode>
    <ConnectInitCode>
       <Type>InstrumentCommand</Type>
@@ -387,7 +387,187 @@ fprintf(g,sprintf('OFLT %d',idx-1));</SetMCode>
                <Description/>
             </Property>
          </PropertyInfo>
-         <MethodInfo/>
+         <MethodInfo>
+            <Method>
+               <Name>autorange</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="AGAN" Output="false"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getX(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'OUTP ? 1');
+
+reading = str2double(reading);
+propertyValue=reading;
+
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getXY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getXY(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running, start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+g=obj.Interface;
+reading=query(g,'SNAP ? 1,2');
+
+reading = regexp(reading, ',', 'split');
+reading = str2double(reading);
+if numel(reading) ==1
+    propertyValue=reading(1);
+else
+    propertyValue = reading(1)+1i*reading(2);
+end
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getY(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'OUTP ? 2');
+
+reading = str2double(reading);
+propertyValue=reading;
+
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>integration_start</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function integration_start(obj,varargin)
+% start the integration timer, nTC: #of timeconstants to wait, default: 5
+
+if nargin &lt; 2
+    nTC=5;
+else
+    nTC=varargin{1};
+end
+
+a=now;
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+
+obj.UserData.IntegrationUntil = a +  s*nTC*obj.timeconstant;
+
+</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+      <Group>
+         <Name>aux</Name>
+         <Description/>
+         <Command/>
+         <Size>4</Size>
+         <Mappings>
+            <ChannelMap Command="4" Index="4"/>
+            <ChannelMap Command="3" Index="3"/>
+            <ChannelMap Command="2" Index="2"/>
+            <ChannelMap Command="1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>value</Name>
+               <Location>aux</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>AUXV &lt;ID&gt;, </ConfigureCommand>
+                     <QueryCommand>AUXV? &lt;ID&gt;</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="10.5" Min="-10.5"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>-10.5</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>getX</Name>
+               <Location>aux</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="OAUX? &lt;ID&gt;" Format="numeric" Output="true" ReadOutputAs="ASCII"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
       </Group>
    </GroupInfo>
 </MATLABInstrumentDriver>
