@@ -193,7 +193,7 @@ propertyValue=r(3);</GetMCode>
 %   This function is called to set the device or group object property
 %   value. If the property is a group property, OBJ is the group object. If
 %   the property is a base device property, OBJ is the device object.
-</SetMCode>
+fprintf(obj.Interface</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>
@@ -301,12 +301,22 @@ propertyValue=r(2);</GetMCode>
                <Name>setB</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
-               <Type>InstrumentCommand</Type>
+               <Type>MCode</Type>
                <Code>
-                  <Commands>
-                     <ConfigureCommand>SETF</ConfigureCommand>
-                     <QueryCommand>SETF?</QueryCommand>
-                  </Commands>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+a=query(obj.Interface,'SETF?');
+r=sscanf(a,'%f');
+propertyValue=r;</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Interface,sprintf('SETF %2.4E',propertyValue));</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>

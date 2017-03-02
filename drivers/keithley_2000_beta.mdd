@@ -333,7 +333,6 @@ this property exists mostly due to generalization.</Description>
                      <Enum Name="PERIOD" Value="&#34;PER&#34;"/>
                      <Enum Name="DIODE" Value="&#34;DIOD&#34;"/>
                      <Enum Name="CONT" Value="&#34;CONT&#34;"/>
-                     <Enum Name="VDC" Value=""/>
                   </ConstraintValue>
                </PermissibleType>
                <DefaultValue>VDC</DefaultValue>
@@ -619,7 +618,7 @@ if strcmp(obj.Trigger.source,'external')
     obj.UserData.IntegrationStarted=1;%internal singifier, that the integration cycle has been invoked by this method.
     obj.UserData.SampleCount=obj.UserData.SampleCount+1;
     if obj.UserData.SampleCount &gt; obj.Buffer.count
-        warning('maximum of %f samples reached',obj.nsamples');
+        warning('maximum of %f samples reached',obj.Trigger.sample_count);
     end
 </MCode>
                </Code>

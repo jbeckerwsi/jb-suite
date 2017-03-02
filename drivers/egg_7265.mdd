@@ -326,19 +326,31 @@ end</SetMCode>
                <Name>range_numeric</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
-               <Type>InstrumentCommand</Type>
+               <Type>MCode</Type>
                <Code>
-                  <Commands>
-                     <ConfigureCommand/>
-                     <QueryCommand>SEN.</QueryCommand>
-                  </Commands>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=query(obj.Interface,'SEN.?');</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+g=obj.Interface;
+fprintf(g,sprintf('SEN %E',propertyValue));</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>
-                  <Constraint>none</Constraint>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="27.0" Min="1.0"/>
+                  </ConstraintValue>
                </PermissibleType>
-               <DefaultValue>0</DefaultValue>
-               <ReadOnly>always</ReadOnly>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
             <Property>
@@ -660,6 +672,64 @@ If n &gt; 0 then current mode is enabled irrespective of the VMODE setting</Desc
                <Description/>
             </Property>
             <Property>
+               <Name>sig_mode</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if strcmp(obj.sig_imode,'off')
+    propertyValue=obj.sig_vmode;
+else
+    switch obj.sig_imode
+        case 'low_noise'
+            propertyValue='I_lowNoise';
+        case 'high_bandwidth'
+            propertyValue='I_highBW';
+    end
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+switch propertyValue
+    case 'I_lowNoise'
+        obj.sig_imode='low_noise';
+    case 'I_highBW'
+        obj.sig_imode='high_bandwidth';
+    case 'A'
+        obj.sig_imode='off';
+        obj.sig_vmode='A';
+    case '-B'
+        obj.sig_imode='off';
+        obj.sig_vmode='-B';
+    case 'A-B'
+        obj.sig_imode='off';
+        obj.sig_vmode='A-B';
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Enum Name="I_lowNoise" Value="I_lowNoise"/>
+                     <Enum Name="I_highBW" Value="I_highBW"/>
+                     <Enum Name="A" Value="A"/>
+                     <Enum Name="A-B" Value="A-B"/>
+                     <Enum Name="-B" Value="-B"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>I_lowNoise</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
                <Name>sig_sample_rate</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
@@ -779,6 +849,36 @@ The instrument adjusts its full-scale sensitivity so that the magnitude output l
 between 30% and 90% of full-scale.</Description>
             </Method>
             <Method>
+               <Name>getosc_amplitude</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getosc_amplitude(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'OA.?');
+
+reading = str2double(reading);
+propertyValue=reading;
+
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
                <Name>getX</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
@@ -835,6 +935,36 @@ if numel(reading) ==1
 else
     propertyValue = reading(1)+1i*reading(2);
 end
+
+%reset timer
+obj.UserData.IntegrationUntil=Inf;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getY</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function propertyValue = getY(obj)
+
+if obj.UserData.IntegrationUntil == Inf %if integration-timer is not yet running start it
+    invoke(obj,'integration_start');
+end
+
+%wait until integration time is passed
+s=1.1597e-05; %if two values of 'now' differ by this value, the time difference is reasonably close to 1second
+t=now;
+pause((obj.UserData.IntegrationUntil - t)/s);
+
+
+g=obj.Interface;
+reading=query(g,'Y.?');
+
+reading = str2double(reading);
+propertyValue=reading;
+
 
 %reset timer
 obj.UserData.IntegrationUntil=Inf;</MCode>
