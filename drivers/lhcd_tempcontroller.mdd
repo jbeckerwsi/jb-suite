@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\matlab-programs\drivers\lhcd_tempcontroller.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>TemperatureController</InstrumentType>
+   <InstrumentManufacturer>LHDC</InstrumentManufacturer>
+   <InstrumentModel>ATC</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>*IDN?</Identify>
+   <Reset>*RST</Reset>
+   <Selftest>*TST?</Selftest>
+   <Error>System:Error?</Error>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.Interface.Terminator='CR';</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>gasvalve</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>!gasvalve</ConfigureCommand>
+                     <QueryCommand>!gasvalve?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>heater_current</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>!outp</ConfigureCommand>
+                     <QueryCommand>!outp?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>kd</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>!kd</ConfigureCommand>
+                     <QueryCommand>!kd?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>ki</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>!ki</ConfigureCommand>
+                     <QueryCommand>!ki?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>kp</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>!kp</ConfigureCommand>
+                     <QueryCommand>!kp?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>pressure</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>!pressure?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>setpoint</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=query(obj.Interface,'!setpoint?');
+propertyValue=str2num(r);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+
+fprintf(obj.Interface,sprintf('!setpoint %1.1f',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="520.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>temperature</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand/>
+                     <QueryCommand>!temp?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>always</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>vacvalve</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>!vacvalve</ConfigureCommand>
+                     <QueryCommand>!vacvalve?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>flush</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function p=flush(obj,n,p_Low,p_High)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+if nargin &lt; 4
+    p_High=900;
+end
+if nargin &lt; 3
+    p_Low=0;
+end
+if nargin &lt; 2
+    n=3;
+end
+
+t=obj.Interface.Timeout;
+obj.Interface.Timeout=80*n; %as this takes a while we have to wait for longer 
+p=query(obj.Interface,sprintf('!flush %1.0d %d %d',n,p_Low,p_High));
+p=str2num(p);
+obj.Interface.Timeout=t;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>getX</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <Line Command="!temp?" Format="numeric" Output="true" ReadOutputAs="ASCII"/>
+                  </Commands>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>pump_to</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function p=pump_to(obj,pressure)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+t=obj.Interface.Timeout;
+obj.Interface.Timeout=80; %as this takes a while we have to wait for longer 
+p=query(obj.Interface,sprintf('!pump %d',pressure));
+p=str2num(p);
+obj.Interface.Timeout=t;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>vent_to</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function p=vent_to(obj,pressure)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+t=obj.Interface.Timeout;
+obj.Interface.Timeout=80; %as this takes a while we have to wait for longer 
+p=query(obj.Interface,sprintf('!vent %d',pressure));
+p=str2num(p);
+obj.Interface.Timeout=t;</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>
