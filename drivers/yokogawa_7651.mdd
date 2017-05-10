@@ -16,10 +16,13 @@
 % This function is called after the object is created.
 % OBJ is the device object.
 % End of function definition - DO NOT EDIT
-obj.UserData.rangeCache=NaN;
 obj.UserData.valueCache=NaN;    % the value-cache is used to prevent the driver to read back the value form the instrument immediately after setting the value; this reduces gpib-traffic and thus delay significantly
 obj.UserData.valueCacheLastUpdate=NaN; % place tic-value in this var
-obj.UserData.sequence=NaN;</Code>
+obj.UserData.sequence=NaN;
+
+obj.UserData.lastStatus.range=NaN;
+obj.UserData.lastStatus.value=NaN;
+obj.UserData.lastStatus.timestamp=NaN; %reset cache</Code>
    </CreateInitCode>
    <ConnectInitCode>
       <Type>MCode</Type>
@@ -67,7 +70,10 @@ d=invoke(obj,'decodeStatus');
 propertyValue=1E-3*d.limit_A;</GetMCode>
                   <SetMCode>function set(obj, propertyName, propertyValue)
 
-obj.UserData.lastStatus.timestamp=0; %reset cache
+propertyValue=round(propertyValue*1e3)*1e-3;
+
+%obj.UserData.lastStatus.timestamp=0; %reset cache
+obj.UserData.lastStatus.limit_A=propertyValue;
 g=obj.Interface;
 fprintf(g,sprintf('LA%1.0f',propertyValue*1E3));</SetMCode>
                </Code>
@@ -96,8 +102,11 @@ fprintf(g,sprintf('LA%1.0f',propertyValue*1E3));</SetMCode>
 d=invoke(obj,'decodeStatus');
 propertyValue=d.limit_V;</GetMCode>
                   <SetMCode>function set(obj, propertyName, propertyValue)
+propertyValue=round(propertyValue);
 
-obj.UserData.lastStatus.timestamp=0; %reset cache
+%obj.UserData.lastStatus.timestamp=0; %reset cache
+obj.UserData.lastStatus.limit_V=propertyValue;
+
 g=obj.Interface;
 fprintf(g,sprintf('LV%1.0f',propertyValue));</SetMCode>
                </Code>
@@ -130,13 +139,14 @@ propertyValue=d.mode;</GetMCode>
 %   This function is called to set the device or group object property
 %   value. If the property is a group property, OBJ is the group object. If
 %   the property is a base device property, OBJ is the device object.
-obj.UserData.lastStatus.timestamp=0; %reset cache
+%obj.UserData.lastStatus.timestamp=0; %reset cache
+
 if(strcmp(propertyValue,'CC'))
-    obj.UserData.mode='CC';
+    obj.UserData.lastStatus.mode='CC';
     g=obj.Interface;
     fprintf(g,'F5E');
 elseif(strcmp(propertyValue,'CV'))
-    obj.UserData.mode='CV';
+    obj.UserData.lastStatus.mode='CV';
     g=obj.Interface;
     fprintf(g,'F1E');
 else
@@ -239,8 +249,7 @@ end
 %   the property is a base device property, OBJ is the device object.
 
 d=invoke(obj,'decodeStatus');
-propertyValue=d.range;
-obj.UserData.rangeCache=d.range;</GetMCode>
+propertyValue=d.range;</GetMCode>
                   <SetMCode>function set(obj, propertyName, propertyValue)
 obj.UserData.lastStatus.timestamp=0; %reset cache
 
@@ -264,7 +273,7 @@ else
 end
     %find nearest
 ind=find(range &gt;= abs(propertyValue),1);
-obj.UserData.range=range(ind);
+obj.UserData.lastStatus.range=range(ind);
 g=obj.Interface;
 fprintf(g,sprintf('%sE',rangeCMD{ind}));
 </SetMCode>
@@ -298,7 +307,9 @@ end</GetMCode>
                   <SetMCode>function set(obj, propertyName, propertyValue)
 %obj.UserData.lastStatus.timestamp=0; %reset cache
 
-if(abs(propertyValue) &gt; obj.UserData.rangeCache) %using rangeCache here: might not me the most recent value, but significantly quicker, as this cache is local
+d=invoke(obj,'decodeStatus');
+
+if(abs(propertyValue) &gt; d.range) %using rangeCache here: might not me the most recent value, but significantly quicker, as this cache is local
 %if(propertyValue &gt; obj.range)
     error('Yokokaga 7651: exceeding range!');
 end
@@ -306,8 +317,7 @@ end
 g=obj.Interface;
 fprintf(g,'S%fE',propertyValue);
 obj.UserData.valueCache=propertyValue;
-obj.UserData.valueCacheLastUpdate=tic;
-</SetMCode>
+obj.UserData.valueCacheLastUpdate=tic;</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>
@@ -397,7 +407,7 @@ if(~isfield(obj.UserData,'lastStatus')) || (now - obj.UserData.lastStatus.timest
     s.limit_V=res(1);
     s.limit_A=res(2);
 
-    s.output_value=sscanf(data{2}(6:end-1),'%f');
+    s.value=sscanf(data{2}(6:end-1),'%f');
     
     times=regexp(data{3},'PI([.\d]*)SW([.\d]*)M(\d*)','tokens');
     s.time_interval=str2num(times{1}{1});
@@ -406,6 +416,8 @@ if(~isfield(obj.UserData,'lastStatus')) || (now - obj.UserData.lastStatus.timest
 
 
     obj.UserData.lastStatus=s;
+    obj.UserData.valueCache=s.value;
+    obj.UserData.valueCacheLastUpdate=tic;
 else
     s=obj.UserData.lastStatus;
 end

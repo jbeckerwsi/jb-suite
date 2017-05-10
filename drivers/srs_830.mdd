@@ -392,11 +392,12 @@ fprintf(g,sprintf('OFLT %d',idx-1));</SetMCode>
                <Name>autorange</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
-               <Type>InstrumentCommand</Type>
+               <Type>MCode</Type>
                <Code>
-                  <Commands>
-                     <Line Command="AGAN" Output="false"/>
-                  </Commands>
+                  <MCode>function autorange(obj)
+% If this is a group function, OBJ is the group object. If
+% it a base device function, OBJ is the device object.
+fprintf(obj.Interface,'AGAN');</MCode>
                </Code>
                <Description/>
             </Method>
