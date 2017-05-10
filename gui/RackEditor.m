@@ -22,7 +22,7 @@ function varargout = RackEditor(varargin)
 
 % Edit the above text to modify the response to help RackEditor
 
-% Last Modified by GUIDE v2.5 28-May-2015 14:11:26
+% Last Modified by GUIDE v2.5 25-Jan-2017 18:28:08
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -390,3 +390,11 @@ function menuitem_about_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 msgbox('RackEditor, Jonathan Becker 2015 <jonathan.becker@wsi.tum.de>','About');
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over refresh.
+function refresh_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to refresh (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
