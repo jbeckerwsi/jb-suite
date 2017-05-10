@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\Matlab Programs\jb-suite\drivers\keithley_220.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>DC Current Source</InstrumentType>
+   <InstrumentManufacturer>Keithley</InstrumentManufacturer>
+   <InstrumentModel>220</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify/>
+   <Reset>*RST</Reset>
+   <Selftest>J0</Selftest>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>InstrumentCommand</Type>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>dwell_time</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=fgets(obj.Interface);
+s=strsplit(r,',');
+propertyValue=str2num(s{3}(2:end))</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Interface,sprintf('W%1.3EX',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="999.9" Min="0.003"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>limit_V</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=fgets(obj.Interface);
+s=strsplit(r,',');
+propertyValue=str2num(s{2}(2:end))</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Interface,sprintf('V%1.0fX',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="105.0" Min="1.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>1.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>output_enabled</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=NaN</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if(propertyValue==1)
+    fprintf(obj.Interface,'F1X');
+else
+    fprintf(obj.Interface,'F0X');
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>value</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=fgets(obj.Interface);
+s=strsplit(r,',');
+propertyValue=str2num(s{1}(5:end))
+
+</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Interface,sprintf('I%1.4EX',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="0.101" Min="-0.101"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo/>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>
