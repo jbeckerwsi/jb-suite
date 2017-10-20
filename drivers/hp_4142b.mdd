@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MATLABInstrumentDriver>
+   <FileVersion>2.42</FileVersion>
+   <DriverName>C:\matlab-programs\jb-suite\drivers\hp_4142b.mdd</DriverName>
+   <DriverType>MATLAB interface object</DriverType>
+   <InstrumentType>SMU</InstrumentType>
+   <InstrumentManufacturer>HP</InstrumentManufacturer>
+   <InstrumentModel>4142B</InstrumentModel>
+   <InstrumentVersion>1.0</InstrumentVersion>
+   <Identify>*IDN?</Identify>
+   <Reset>*RST</Reset>
+   <Selftest/>
+   <Error/>
+   <CreateInitCode>
+      <Code>function init(obj)
+% This function is called after the object is created.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.Interface.InputBufferSize=50000;
+obj.UserData.ChannelEnabled=[0 0 0 0 0 0 0 0];
+obj.UserData.limit_V=[1 1 1 1 1 1 1 1]*100e-6;
+obj.UserData.limit_I=[1 1 1 1 1 1 1 1]*1e-6;
+obj.UserData.mode=[0 0 0 0 0 0 0 0];
+obj.UserData.value=[NaN NaN NaN NaN NaN NaN NaN NaN];</Code>
+   </CreateInitCode>
+   <ConnectInitCode>
+      <Type>MCode</Type>
+      <Code>function init(obj)
+% This function is called after the object is connected.
+% OBJ is the device object.
+% End of function definition - DO NOT EDIT
+obj.Interface.EOSCharCode='LF';
+obj.Interface.EOSMode='read&amp;write';</Code>
+   </ConnectInitCode>
+   <CleanupCode>
+      <Type>InstrumentCommand</Type>
+      <Code>CL\n</Code>
+   </CleanupCode>
+   <GroupInfo>
+      <Group>
+         <Name>parent</Name>
+         <Description/>
+         <Command/>
+         <Size>1</Size>
+         <Mappings>
+            <ChannelMap Command="parent1" Index="1"/>
+         </Mappings>
+         <PropertyInfo/>
+         <MethodInfo/>
+      </Group>
+      <Group>
+         <Name>channel</Name>
+         <Description/>
+         <Command/>
+         <Size>8</Size>
+         <Mappings>
+            <ChannelMap Command="channel8" Index="8"/>
+            <ChannelMap Command="channel7" Index="7"/>
+            <ChannelMap Command="channel6" Index="6"/>
+            <ChannelMap Command="channel5" Index="5"/>
+            <ChannelMap Command="channel4" Index="4"/>
+            <ChannelMap Command="channel3" Index="3"/>
+            <ChannelMap Command="channel2" Index="2"/>
+            <ChannelMap Command="channel1" Index="1"/>
+         </Mappings>
+         <PropertyInfo>
+            <Property>
+               <Name>limit_I</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=obj.Parent.UserData.limit_I(obj.HwIndex);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+obj.Parent.UserData.limit_I(obj.HwIndex)=propertyValue;
+invoke(obj,'setOutput');</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>limit_V</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=obj.Parent.UserData.limit_V(obj.HwIndex);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+obj.Parent.UserData.limit_V(obj.HwIndex)=propertyValue;
+invoke(obj,'setOutput');</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>mode</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if obj.Parent.UserData.mode(obj.HwIndex)==0
+    propertyValue='CV';
+elseif obj.Parent.UserData.mode(obj.HwIndex)==1
+    propertyValue='CC';
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if strcmp(propertyValue,'CC')
+    obj.Parent.UserData.mode(obj.HwIndex)=1;
+elseif strcmp(propertyValue,'CV')
+    obj.Parent.UserData.mode(obj.HwIndex)=0;
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>String</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>output_enable</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=obj.Parent.UserData.ChannelEnabled(obj.HwIndex);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+I=obj.Parent.Interface;
+
+if propertyValue==1
+    fprintf(I,sprintf('CN%i',obj.HwIndex));
+    obj.Parent.UserData.ChannelEnabled(obj.HwIndex)=1;
+elseif propertyValue==0
+    fprintf(I,sprintf('CL%i',obj.HwIndex));
+    obj.Parent.UserData.ChannelEnabled(obj.HwIndex)=0;
+end</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>value</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+propertyValue=obj.Parent.UserData.value(obj.HwIndex);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+obj.Parent.UserData.value(obj.HwIndex)=propertyValue;
+
+invoke(obj,'setOutput');</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+         </PropertyInfo>
+         <MethodInfo>
+            <Method>
+               <Name>setOutput</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function setOutput(obj)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+I=obj.Parent.Interface;
+
+if ~isnan(obj.value)
+    if strcmp(obj.mode,'CV')
+        if isnan(obj.limit_I)
+            cmd=sprintf('DV%i,0,%e',obj.HwIndex,obj.value);
+        else
+            cmd=sprintf('DV%i,0,%e,%e',obj.HwIndex,obj.value,obj.limit_I); 
+        end
+        fprintf(I,cmd);
+    elseif strcmp(obj.mode,'CC')
+        if isnan(obj.limit_V)
+            cmd=sprintf('DI%i,0,%e',obj.HwIndex,obj.value);
+        else
+            cmd=sprintf('DI%i,0,%e,%e',obj.HwIndex,obj.value,obj.limit_V); 
+        end
+        fprintf(I,cmd);
+    end
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>spotMeasureI</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function varargout=spotMeasureI(obj,voltage,compliance)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+I=obj.Parent.Interface;
+
+nout = max(nargout,1);
+
+if strcmp(obj.mode,'CV')
+    if nargin &gt; 1
+        obj.value=voltage;
+    end
+    if nargin &gt; 2
+        obj.limit_I=compliance;
+    end
+    a=query(I,sprintf('MM1,%i;XE\n',obj.HwIndex));
+    if(a(1)=='C') %measurement status 'C' indicated that compliance was reached
+        hit_compliance=1;
+    else
+        hit_compliance=0;
+    end
+    I_meas=sscanf(a(4:end),'%e');
+
+end
+
+varargout{1}=I_meas;
+if nout==2
+    varargout{2}=hit_compliance;
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>spotMeasureV</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function varargout=spotMeasureV(obj,voltage,compliance)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+I=obj.Parent.Interface;
+
+nout = max(nargout,1);
+
+if strcmp(obj.mode,'CC')
+    if nargin &gt; 1
+        obj.value=voltage;
+    end
+    if nargin &gt; 2
+        obj.limit_I=compliance;
+    end
+    a=query(I,sprintf('MM1,%i;XE\n',obj.HwIndex));
+    if(a(1)=='C') %measurement status 'C' indicated that compliance was reached
+        hit_compliance=1;
+    else
+        hit_compliance=0;
+    end
+    V_meas=sscanf(a(4:end),'%e');
+
+end
+
+varargout{1}=V_meas;
+if nout==2
+    varargout{2}=hit_compliance;
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>stairCaseMeasureI</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function [V,I_meas] = stairCaseMeasureI(obj,Vrange,nSteps)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+I=obj.Parent.Interface;
+
+
+V=linspace(Vrange(1),Vrange(2),nSteps);
+
+a=query(I,sprintf('WV%i,1,0,%f,%f,%i,%f;MM2,%i;RI%i,18;XE',obj.HwIndex,V(1),V(end),numel(V),obj.limit_I,obj.HwIndex,obj.HwIndex));
+
+a=strsplit(a,',');
+for i=1:numel(a)
+    I_meas(i)=sscanf(a{i}(4:end),'%e');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+         </MethodInfo>
+      </Group>
+   </GroupInfo>
+</MATLABInstrumentDriver>
