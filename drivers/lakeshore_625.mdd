@@ -122,13 +122,14 @@
 %determine if field is still beeing ramped.
 %i.e. within 2% of the requested value
 
-get=obj.current_B;
-set=obj.setB;
+%query Operation Condition register
+a=query(obj.Interface,'OPST?');
 
-if (abs(get-set)/set) &lt; 0.02 || (set&lt;10E-3 || abs(get) &lt; 1E-4)
-    propertyValue=0;
+%bit 1 (in matlab: bit #2) indicates Ramp Done
+if bitget(str2num(a),2) == 1
+    propertyValue = 0
 else
-    propertyValue=1;
+    propertyValue = 1
 end</GetMCode>
                   <SetMCode>function set(obj, propertyName, propertyValue)
 % Set a property value.
