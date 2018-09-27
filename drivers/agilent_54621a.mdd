@@ -245,6 +245,25 @@
                <Description/>
             </Property>
             <Property>
+               <Name>level</Name>
+               <Location>trigger</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>InstrumentCommand</Type>
+               <Code>
+                  <Commands>
+                     <ConfigureCommand>:TRIGger:LEVel </ConfigureCommand>
+                     <QueryCommand>:TRIGger:LEVel?</QueryCommand>
+                  </Commands>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>none</Constraint>
+               </PermissibleType>
+               <DefaultValue/>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
                <Name>reject</Name>
                <Location>trigger</Location>
                <CapabilityGroup>Base</CapabilityGroup>

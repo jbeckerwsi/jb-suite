@@ -10,6 +10,7 @@ classdef temperatureController < handle
         PID;           % PID parameters (struct: p,i,d)
         maxCurrent=100E-3; %current limit
         outputScaling=@(x) sqrt(abs(x)/1000); %applied output-scaling, as we are setting the current, but actually want to regulate the power we apply this function (P=RI^2), with R_heat=1kOhm
+        outputScalingInv=@(x) 1000*x.^2;
     end
     
     properties (SetAccess='private')
@@ -97,11 +98,12 @@ classdef temperatureController < handle
                 new_value=prop+int+diff;
             end
             if new_value < 0
-                new_value=0; %cant heat, just cool
+                new_value=0; %cant cool, just heat
             end
             
             if obj.outputScaling(new_value) > obj.maxCurrent   %current limit
-                new_value = obj.maxCurrent;
+                new_value = obj.outputScalingInv(obj.maxCurrent);
+                warning('Heater @ current limit');
             end
             obj.outputValues(end+1)=new_value;
             obj.heatingSupply.value=obj.outputScaling(new_value); 
