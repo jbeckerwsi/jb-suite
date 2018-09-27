@@ -58,8 +58,10 @@ g=obj.Interface;
 if strcmp(propertyValue,'auto')
     fprintf(g,'P RANGE AUTO');
 else
-    ranges=[5 20]; %not much going on here ;)
-    if(abs(propertyValue) &gt; 5)
+    ranges=[5 20 140]; %not much going on here ;)
+    if(abs(propertyValue) &gt; 20)
+        range=ranges(3);
+    elseif(abs(propertyValue) &gt; 5)
         range=ranges(2);
     else
         range=ranges(1);
