@@ -133,12 +133,21 @@ obj.Interface.Terminator='CR';</Code>
                <Name>pressure</Name>
                <Location>parent</Location>
                <CapabilityGroup>Base</CapabilityGroup>
-               <Type>InstrumentCommand</Type>
+               <Type>MCode</Type>
                <Code>
-                  <Commands>
-                     <ConfigureCommand/>
-                     <QueryCommand>!pressure?</QueryCommand>
-                  </Commands>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=query(obj.Interface,'!pressure?');
+propertyValue=str2num(r);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+</SetMCode>
                </Code>
                <PermissibleType>
                   <Type>Double</Type>
@@ -173,10 +182,82 @@ fprintf(obj.Interface,sprintf('!setpoint %1.1f',propertyValue));</SetMCode>
                   <Type>Double</Type>
                   <Constraint>bounded</Constraint>
                   <ConstraintValue>
-                     <Range Max="520.0" Min="0.0"/>
+                     <Range Max="550.0" Min="0.0"/>
                   </ConstraintValue>
                </PermissibleType>
                <DefaultValue>0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>streaming_enabled</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=query(obj.Interface,'!streaming?');
+if abs(str2num(r)-1.0) &lt; eps(1.0)
+    propertyValue=1;
+else
+    propertyValue=0;
+end</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+if abs(propertyValue-1.0) &lt; eps(1.0)
+    propertyValue=1;
+else
+    propertyValue=0;
+end
+fprintf(obj.Interface,sprintf('!streaming %1.1f',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>enum</Constraint>
+                  <ConstraintValue>
+                     <Value>0.0</Value>
+                     <Value>1.0</Value>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
+               <ReadOnly>never</ReadOnly>
+               <Description/>
+            </Property>
+            <Property>
+               <Name>streaming_interval</Name>
+               <Location>parent</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <GetMCode>function propertyValue = getProperty(obj, propertyName)
+% Return a property value.
+%   This function is called to return the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+r=query(obj.Interface,'!streaming_interval?');
+propertyValue=str2num(r);</GetMCode>
+                  <SetMCode>function set(obj, propertyName, propertyValue)
+% Set a property value.
+%   This function is called to set the device or group object property
+%   value. If the property is a group property, OBJ is the group object. If
+%   the property is a base device property, OBJ is the device object.
+fprintf(obj.Interface,sprintf('!streaming_interval %1.1f',propertyValue));</SetMCode>
+               </Code>
+               <PermissibleType>
+                  <Type>Double</Type>
+                  <Constraint>bounded</Constraint>
+                  <ConstraintValue>
+                     <Range Max="500.0" Min="0.0"/>
+                  </ConstraintValue>
+               </PermissibleType>
+               <DefaultValue>0.0</DefaultValue>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
