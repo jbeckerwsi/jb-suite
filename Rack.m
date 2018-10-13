@@ -35,6 +35,17 @@ classdef Rack < dynamicprops
         end
         %%%%%%%%% get & set's %%%%%%%%%%%%%%%%
         function value = get.connected(obj)
+            
+            n=0;
+            for d=obj.devices
+                if strcmp(obj.(d{1}).Status,'open')
+                    n=n+1;
+                end
+            end
+            if n == numel(obj.devices)
+                obj.connected=true;
+            end
+            
             if obj.connected
                 value=true;
                 return
