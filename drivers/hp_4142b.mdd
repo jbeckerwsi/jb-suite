@@ -88,7 +88,7 @@ invoke(obj,'setOutput');</SetMCode>
                   <Type>Double</Type>
                   <Constraint>none</Constraint>
                </PermissibleType>
-               <DefaultValue/>
+               <DefaultValue>0</DefaultValue>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
@@ -116,7 +116,7 @@ invoke(obj,'setOutput');</SetMCode>
                   <Type>Double</Type>
                   <Constraint>none</Constraint>
                </PermissibleType>
-               <DefaultValue/>
+               <DefaultValue>0</DefaultValue>
                <ReadOnly>never</ReadOnly>
                <Description/>
             </Property>
@@ -235,16 +235,16 @@ I=obj.Parent.Interface;
 if ~isnan(obj.value)
     if strcmp(obj.mode,'CV')
         if isnan(obj.limit_I)
-            cmd=sprintf('DV%i,0,%e',obj.HwIndex,obj.value);
+            cmd=sprintf('DV%i,0,%2.5e',obj.HwIndex,obj.value);
         else
-            cmd=sprintf('DV%i,0,%e,%e',obj.HwIndex,obj.value,obj.limit_I); 
+            cmd=sprintf('DV%i,0,%2.5e,%2.5e',obj.HwIndex,obj.value,obj.limit_I); 
         end
         fprintf(I,cmd);
     elseif strcmp(obj.mode,'CC')
         if isnan(obj.limit_V)
-            cmd=sprintf('DI%i,0,%e',obj.HwIndex,obj.value);
+            cmd=sprintf('DI%i,0,%2.5e',obj.HwIndex,obj.value);
         else
-            cmd=sprintf('DI%i,0,%e,%e',obj.HwIndex,obj.value,obj.limit_V); 
+            cmd=sprintf('DI%i,0,%2.5e,%2.5e',obj.HwIndex,obj.value,obj.limit_V); 
         end
         fprintf(I,cmd);
     end
@@ -341,11 +341,59 @@ I=obj.Parent.Interface;
 
 V=linspace(Vrange(1),Vrange(2),nSteps);
 
-a=query(I,sprintf('WV%i,1,0,%f,%f,%i,%f;MM2,%i;RI%i,18;XE',obj.HwIndex,V(1),V(end),numel(V),obj.limit_I,obj.HwIndex,obj.HwIndex));
+a=query(I,sprintf('WV%i,1,0,%2.5f,%2.5f,%i,%2.3f;MM2,%i;RI%i,18;XE',obj.HwIndex,V(1),V(end),numel(V),obj.limit_I,obj.HwIndex,obj.HwIndex));
 
 a=strsplit(a,',');
 for i=1:numel(a)
     I_meas(i)=sscanf(a{i}(4:end),'%e');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>stairCaseMeasureV</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function [V_meas,I] = stairCaseMeasureV(obj,Irange,nSteps)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+If=obj.Parent.Interface;
+
+
+I=linspace(Irange(1),Irange(2),nSteps);
+
+a=query(If,sprintf('WI%i,1,0,%2.5f,%2.5f,%i,%2.3f;MM2,%i;RI%i,18;XE',obj.HwIndex,I(1),I(end),numel(I),obj.limit_V,obj.HwIndex,obj.HwIndex));
+
+a=strsplit(a,',');
+for i=1:numel(a)
+    V_meas(i)=sscanf(a{i}(4:end),'%e');
+end</MCode>
+               </Code>
+               <Description/>
+            </Method>
+            <Method>
+               <Name>stairCaseMeasureVlog</Name>
+               <Location>channel</Location>
+               <CapabilityGroup>Base</CapabilityGroup>
+               <Type>MCode</Type>
+               <Code>
+                  <MCode>function [V_meas,I] = stairCaseMeasureVlog(obj,Irange,nSteps)
+% For group functions, OBJ is the group object. For
+% base device functions, OBJ is the device object.
+
+If=obj.Parent.Interface;
+
+
+I=linspace(Irange(1),Irange(2),nSteps);
+
+a=query(If,sprintf('WI%i,2,0,%2.5f,%2.5f,%i,%2.3f;MM2,%i;RI%i,18;XE',obj.HwIndex,I(1),I(end),numel(I),obj.limit_V,obj.HwIndex,obj.HwIndex));
+
+a=strsplit(a,',');
+for i=1:numel(a)
+    V_meas(i)=sscanf(a{i}(4:end),'%e');
 end</MCode>
                </Code>
                <Description/>
